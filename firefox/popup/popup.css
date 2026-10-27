@@ -192,12 +192,14 @@ body {
 /* Font Size Scaling */
 html.font-size-large {
   font-size: 115%;
+  zoom: 1.15;
 }
 html.font-size-large body {
   width: 310px;
 }
 html.font-size-huge {
   font-size: 130%;
+  zoom: 1.30;
 }
 html.font-size-huge body {
   width: 320px;

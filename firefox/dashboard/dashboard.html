@@ -64,6 +64,9 @@
           <span id="sidebar-streak-label">Streak:</span>
           <strong id="sidebar-streak">1 Days</strong>
         </div>
+        <div class="mode-badge" style="margin-top: 8px; font-family: var(--font-head); font-size: 8px; text-align: center;">
+          <span id="sidebar-mode-label">[COZY MODE]</span>
+        </div>
       </div>
     </aside>
 
@@ -109,6 +112,7 @@
                           <button id="dash-rename-btn" title="Rename Companion" class="rename-inline-btn">[edit]</button>
                           <span id="pet-display-level" class="branch-pill">Lv. 1</span>
                           <span id="pet-display-branch" class="branch-pill">Denki</span>
+                          <span id="pet-display-mode" class="branch-pill" style="font-weight: bold;">[COZY]</span>
                         </div>
                         <button id="btn-pet-info" class="pet-info-btn" title="View Vitals & Diagnostics (Flip Card)" aria-label="Pet Information">i</button>
                       </div>
@@ -206,9 +210,9 @@
               </div>
             </div>
 
-            <!-- Focus Session Accountability Card (Below Creature Cards) -->
+            <!-- Focus Session Card (Below Creature Cards) -->
             <div class="dash-card focus-card">
-              <h3>Focus Session (Pomodoro Accountability)</h3>
+              <h3>Focus Session</h3>
               <p class="section-desc">Commit to a focused study sprint. Poyori will track your browsing accountability and award substantial XP upon completion.</p>
               <div class="focus-controls-row">
                 <select id="dash-focus-discipline" class="dash-select">
@@ -329,7 +333,7 @@
           </div>
 
           <div class="dash-card" style="margin-top: 20px;">
-            <h3>Adjustable UI Font Size</h3>
+            <h3>Font Size</h3>
             <p class="section-desc">Scale retro typography for optimal readability across high-DPI screens and various aspect ratios.</p>
             <div id="dash-font-size-row" class="palette-grid" style="display: flex; gap: 8px;">
               <button class="dash-font-size-btn palette-card" data-font-size="normal" style="flex: 1;">Normal (1.0x)</button>
@@ -371,23 +375,8 @@
               </div>
 
               <h4 style="margin-top: 20px;">Default Built-in Presets</h4>
-              <div class="preset-badges-wrap">
-                <div class="preset-col">
-                  <strong>Denki (Coding)</strong>
-                  <p>github.com, stackoverflow.com, developer.mozilla.org, leetcode.com, dev.to</p>
-                </div>
-                <div class="preset-col">
-                  <strong>Chishiki (Scholar)</strong>
-                  <p>wikipedia.org, coursera.org, edx.org, khanacademy.org, arxiv.org</p>
-                </div>
-                <div class="preset-col">
-                  <strong>Monogatari (Story)</strong>
-                  <p>duolingo.com, medium.com, substack.com, goodreads.com</p>
-                </div>
-                <div class="preset-col">
-                  <strong>Distracting</strong>
-                  <p>youtube.com, reddit.com, twitter.com, x.com, tiktok.com, instagram.com</p>
-                </div>
+              <div id="preset-badges-wrap" class="preset-badges-wrap">
+                <!-- Populated dynamically from DOMAIN_PRESETS -->
               </div>
             </div>
           </div>

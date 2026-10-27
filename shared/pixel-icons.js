@@ -438,6 +438,39 @@ const ICON_GRIDS = {
     "#cccccccc#",
     "#cc#..#cc#",
     "##########"
+  ],
+  retro_glasses: [
+    "##########",
+    "#cww#..#cww#",
+    "#cccc..#cccc",
+    "############"
+  ],
+  cozy_scarf: [
+    "..######..",
+    ".#rrrrrr#.",
+    ".#r#WW#r#.",
+    "..#rr##...",
+    "...##....."
+  ],
+  ninja_cowl: [
+    ".########.",
+    "#bbbbbbbb#",
+    "#bb#..#bb#",
+    "#bbbbbbbb#",
+    ".########."
+  ],
+  red_cape: [
+    "..#Y##Y#..",
+    ".#rrrrrr#.",
+    "#rrrrrrrr#",
+    "#rr#..#rr#"
+  ],
+  samurai_helm: [
+    ".#Y#..#Y#.",
+    "..#YYYY#..",
+    "##########",
+    "#bb#YY#bb#",
+    ".########."
   ]
 };
 

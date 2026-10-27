@@ -390,6 +390,7 @@ export class PoyoriEngine {
     const pet = state.pet;
     pet.kizuna = Math.min(100, pet.kizuna + 3);
     pet.lastInteractedAt = Date.now();
+    pet.lastPettedAt = Date.now();
     
     // Hatch egg if petted enough
     let evolution = null;
@@ -662,6 +663,14 @@ export class PoyoriEngine {
 
     // All 5 retro screen palettes unlocked
     state.pet.unlockedPalettes = ['rpg_parchment', 'classic_lcd', 'gameboy_pocket', 'cyber_neon', 'sakura_retro'];
+
+    // All creature color theme palettes unlocked
+    if (typeof CREATURE_THEMES !== 'undefined') {
+      state.pet.unlockedThemes = Object.keys(CREATURE_THEMES);
+      if (Array.isArray(state.roster)) {
+        state.roster.forEach(c => { c.unlockedThemes = Object.keys(CREATURE_THEMES); });
+      }
+    }
 
     // Max vitals & cured sickness
     state.pet.onaka = 100;
@@ -1173,12 +1182,15 @@ export class PoyoriEngine {
   static getUnlockedCreatureThemes(pet) {
     const stage = pet?.stage || 1;
     const isKomyo = !!pet?.isKomyo;
+    const customUnlocked = pet?.unlockedThemes || [];
     const unlocked = [];
 
     if (!CREATURE_THEMES) return [];
 
     for (const theme of Object.values(CREATURE_THEMES)) {
-      if (theme.id === 'celestial_shiny') {
+      if (customUnlocked.includes(theme.id) || customUnlocked.includes('all')) {
+        unlocked.push(theme);
+      } else if (theme.id === 'celestial_shiny') {
         if (stage >= 6 || isKomyo) {
           unlocked.push(theme);
         }

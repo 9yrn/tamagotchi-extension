@@ -21,6 +21,7 @@ export class TutorialModal {
     this.totalSteps = 5;
     this.selectedStarterId = options.state?.pet?.creatureId || 'coding_tamago';
     this.enteredPetName = options.state?.pet?.name || 'Poyori';
+    this.selectedMode = options.state?.settings?.consequenceMode || 'cozy';
     this.element = null;
     this.init();
   }
@@ -76,6 +77,7 @@ export class TutorialModal {
     if (options.onFinish) this.onFinishCallback = options.onFinish;
     this.selectedStarterId = this.state?.pet?.creatureId || 'coding_tamago';
     this.enteredPetName = this.state?.pet?.name || 'Poyori';
+    this.selectedMode = this.state?.settings?.consequenceMode || 'cozy';
 
     this.renderStep();
     if (this.element && this.element.style) {
@@ -175,6 +177,10 @@ export class TutorialModal {
     this.state.pet.name = this.enteredPetName || 'Poyori';
     this.state.pet.chosenBranch = breedMeta.branch || 'coding';
     this.state.pet.activeDisciplines = [breedMeta.branch || 'coding'];
+
+    if (this.state.settings) {
+      this.state.settings.consequenceMode = this.selectedMode || 'cozy';
+    }
 
     if (Array.isArray(this.state.roster) && this.state.roster[0]) {
       this.state.roster[0].creatureId = this.selectedStarterId;
@@ -343,12 +349,27 @@ export class TutorialModal {
   }
 
   /**
-   * Step 3: Vitals & Care
+   * Step 3: Vitals & Care with Game Mode Selection
    */
   renderStep3() {
+    const isHardcore = this.selectedMode === 'hardcore';
     return `
-      <h2 class="tutorial-title">NURTURING YOUR SPIRIT</h2>
-      <div class="tutorial-subtitle">Maintain vitals through daily care, wholesome meals & herbal remedies</div>
+      <h2 class="tutorial-title">NURTURING YOUR SPIRIT & GAME MODE</h2>
+      <div class="tutorial-subtitle">Choose your gameplay stakes and learn the essentials of companion care</div>
+
+      <div class="tutorial-mode-select-wrap">
+        <label class="tutorial-naming-label">${getPixelIconHtml('star', 12)} CHOOSE YOUR GAMEPLAY MODE:</label>
+        <div class="tutorial-mode-grid">
+          <div class="tutorial-mode-card ${!isHardcore ? 'selected' : ''}" data-mode="cozy">
+            <div class="tutorial-mode-title">${getPixelIconHtml('sakura', 12)} COZY MODE</div>
+            <div class="tutorial-mode-desc">Relaxed & forgiving companionship. Poyori will never run away or permanently leave if neglected. Perfect for casual, peaceful focus.</div>
+          </div>
+          <div class="tutorial-mode-card ${isHardcore ? 'selected' : ''}" data-mode="hardcore">
+            <div class="tutorial-mode-title">${getPixelIconHtml('flame', 12)} HARDCORE MODE</div>
+            <div class="tutorial-mode-desc">Authentic retro stakes! Neglecting Poyori for 48 hours will cause them to run away into Mochimori. Distractions drain energy faster.</div>
+          </div>
+        </div>
+      </div>
 
       <div class="tutorial-features-grid">
         <div class="tutorial-feature-card">
@@ -479,6 +500,22 @@ export class TutorialModal {
           this.enteredPetName = e.target.value.trim().slice(0, 20);
         });
       }
+    }
+
+    // Game mode selector on Step 3
+    if (this.currentStep === 3) {
+      const modeCards = this.element.querySelectorAll('.tutorial-mode-card');
+      modeCards.forEach(card => {
+        card.addEventListener('click', () => {
+          this.selectedMode = card.dataset.mode;
+          if (this.state && this.state.settings) {
+            this.state.settings.consequenceMode = this.selectedMode;
+          }
+          try { audioSynth.chirp(); } catch (e) {}
+          modeCards.forEach(c => c.classList.remove('selected'));
+          card.classList.add('selected');
+        });
+      });
     }
   }
 }

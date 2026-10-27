@@ -11,6 +11,7 @@ import { audioSynth } from '../ui/audio.js';
 
 let state = null;
 let currentDomain = null;
+let isBlushing = false;
 
 function escapeHtml(str) {
   if (typeof str !== 'string') return '';
@@ -96,19 +97,34 @@ function renderPet() {
 
   const spriteEl = document.getElementById('pet-sprite');
   const isPocket = state.settings?.petVisible === false || state.settings?.pocketMode === true;
+  const isPetted = isBlushing || (Date.now() - (pet.lastPettedAt || 0) < 2500);
+
   if (isPocket) {
     spriteEl.src = getCreatureSprite(pet.creatureId, 'sleep', pet.accessory, pet.theme);
     spriteEl.style.opacity = '0.7';
     spriteEl.style.filter = 'drop-shadow(0 2px 4px rgba(0,0,0,0.4))';
     spriteEl.title = 'Pocket Mode: Poyori is resting safely in your pocket. Click to wake and summon!';
   } else {
-    spriteEl.src = getCreatureSprite(pet.creatureId, pet.isSleeping ? 'sleep' : (pet.isSick ? 'idle1' : 'idle1'), pet.accessory, pet.theme);
+    let action = 'idle1';
+    if (isPetted) action = 'petted';
+    else if (pet.isSleeping) action = 'sleep';
+    else if (pet.isSick) action = 'idle1';
+
+    spriteEl.src = getCreatureSprite(pet.creatureId, action, pet.accessory, pet.theme);
     spriteEl.style.opacity = '1';
     spriteEl.style.filter = 'none';
     spriteEl.title = 'Click Poyori to tuck into Pocket Mode (resting)!';
   }
 
   applyFontSizeClass(state.settings?.fontSize || 'normal');
+
+  const isHardcore = state.settings?.consequenceMode === 'hardcore';
+  const modeBadgeEl = document.getElementById('popup-pet-mode');
+  if (modeBadgeEl) {
+    modeBadgeEl.textContent = isHardcore ? 'HARDCORE' : 'COZY';
+    modeBadgeEl.style.color = isHardcore ? '#e74c3c' : '#2980b9';
+    modeBadgeEl.style.borderColor = isHardcore ? '#e74c3c' : '#2980b9';
+  }
 
   const genderIcon = getPixelIconHtml(pet.gender === 'male' ? 'gender_male' : 'gender_female', 11);
   document.getElementById('pet-name').innerHTML = `${escapeHtml(pet.name)} ${genderIcon} ${pet.isKomyo ? getPixelIconHtml('star', 12) : ''}`;
@@ -358,8 +374,14 @@ function bindEvents() {
   // Quick Pet
   document.getElementById('quick-pet-btn').addEventListener('click', async () => {
     PoyoriEngine.pet(state);
+    audioSynth.purr();
     await saveState(state);
+    isBlushing = true;
     renderPet();
+    setTimeout(() => {
+      isBlushing = false;
+      renderPet();
+    }, 2500);
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0]?.id) {
         chrome.tabs.sendMessage(tabs[0].id, { action: 'pet' }).catch(() => {});

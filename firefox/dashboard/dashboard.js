@@ -5,7 +5,7 @@
  */
 
 import { getState, saveState, subscribeState } from '../shared/storage.js';
-import { CREATURES, STAGES, FOOD_ITEMS, ACCESSORIES, PALETTES, getTerm, DEFAULT_STATE } from '../shared/constants.js';
+import { CREATURES, STAGES, FOOD_ITEMS, ACCESSORIES, PALETTES, DOMAIN_PRESETS, getTerm, DEFAULT_STATE } from '../shared/constants.js';
 import { PoyoriEngine } from '../shared/game-engine.js';
 import { getCreatureSprite } from '../content/sprites.js';
 import { audioSynth } from '../ui/audio.js';
@@ -145,6 +145,7 @@ function renderAll() {
   renderBestiary();
   renderTasks();
   renderWardrobe();
+  renderMarket();
   renderWebsites();
   renderSettings();
 }
@@ -155,13 +156,21 @@ function renderAll() {
 function renderSidebar() {
   const pet = state.pet;
   const brandImg = document.getElementById('brand-sprite');
-  brandImg.src = getCreatureSprite(pet.creatureId, 'idle1', pet.accessory);
+  const isPetted = Date.now() - (pet.lastPettedAt || 0) < 2500;
+  brandImg.src = getCreatureSprite(pet.creatureId, isPetted ? 'petted' : 'idle1', pet.accessory);
 
   document.getElementById('sidebar-coin-label').innerHTML = `${getPixelIconHtml('coin', 14)} Koban:`;
   document.getElementById('sidebar-streak-label').innerHTML = `${getPixelIconHtml('flame', 14)} Streak:`;
 
   document.getElementById('sidebar-coins').textContent = state.koban || 0;
   document.getElementById('sidebar-streak').textContent = `${state.stats.currentStreak} Days`;
+
+  const isHardcore = state.settings?.consequenceMode === 'hardcore';
+  const modeLabel = document.getElementById('sidebar-mode-label');
+  if (modeLabel) {
+    modeLabel.textContent = isHardcore ? '[HARDCORE MODE]' : '[COZY MODE]';
+    modeLabel.style.color = isHardcore ? '#ff7675' : 'var(--accent-cyan)';
+  }
 }
 
 let selectedOverviewRosterIndex = 0;
@@ -277,9 +286,19 @@ function renderOverview() {
   const lvlEl = document.getElementById('pet-display-level');
   if (lvlEl) lvlEl.textContent = `Lv. ${pet.level || 1}`;
 
+  const isHardcore = state.settings?.consequenceMode === 'hardcore';
+  const petModeEl = document.getElementById('pet-display-mode');
+  if (petModeEl) {
+    petModeEl.textContent = isHardcore ? '[HARDCORE]' : '[COZY]';
+    petModeEl.style.color = isHardcore ? '#ff7675' : '#45b7b8';
+    petModeEl.style.borderColor = isHardcore ? '#ff7675' : '#45b7b8';
+  }
+
   const currentMood = isSelectedActive ? PoyoriEngine.getPetMood(state) : 'cheerful';
+  const isPetted = isSelectedActive && (Date.now() - (state.pet.lastPettedAt || 0) < 2500);
   let action = 'idle1';
-  if (isSelectedActive && state.pet.isSleeping) action = 'sleep';
+  if (isPetted) action = 'petted';
+  else if (isSelectedActive && state.pet.isSleeping) action = 'sleep';
   else if (currentMood === 'grumpy') action = 'grumpy';
 
   const spriteImg = document.getElementById('overview-pet-img');
@@ -546,20 +565,24 @@ function setupOverviewActions() {
     }
   });
 
-  document.getElementById('btn-care-pet').addEventListener('click', async () => {
+  const handlePetInteraction = async () => {
     const res = PoyoriEngine.pet(state);
     audioSynth.purr();
-    const petImg = document.getElementById('overview-pet-img');
-    if (petImg) {
-      petImg.src = getCreatureSprite(state.pet.creatureId, 'petted', state.pet.accessory);
-      petImg.classList.add('petting-reaction');
-      setTimeout(() => {
-        petImg.classList.remove('petting-reaction');
-        renderOverview();
-      }, 1500);
-    }
     await saveState(state);
     renderSidebar();
+    renderOverview();
+
+    const petImg = document.getElementById('overview-pet-img');
+    if (petImg) petImg.classList.add('petting-reaction');
+    const brandImg = document.getElementById('brand-sprite');
+    if (brandImg) brandImg.classList.add('petting-reaction');
+
+    setTimeout(() => {
+      if (petImg) petImg.classList.remove('petting-reaction');
+      if (brandImg) brandImg.classList.remove('petting-reaction');
+      renderSidebar();
+      renderOverview();
+    }, 2500);
 
     if (res.evolution && res.evolution.evolved && celebrationModal) {
       const evo = res.evolution;
@@ -569,6 +592,29 @@ function setupOverviewActions() {
         title: isHatch ? 'EGG HATCHED!' : (evo.isKomyo ? 'MYTHIC ASCENSION!' : 'EVOLUTION UNLOCKED!'),
         subtitle: isHatch ? '生まれ (Umare) - A New Life Begins!' : '神獣進化 (Shinju Shinka) - Divine Evolution!',
         name: `${evo.creature.name} (${evo.creature.jaName})`,
+        badgeText: `STAGE ${evo.stage || 2} ・ ${evo.creature.branch.toUpperCase()}`,
+        spriteUrl: getCreatureSprite(evo.newId, 'idle1', state.pet.accessory),
+        description: evo.creature.desc || 'Your dedication and focused habits have guided Poyori to evolve!',
+        actionLabel: 'Name & Continue!',
+        enableNaming: true,
+        currentName: state.pet.name,
+        onAction: async (newName) => {
+          if (newName && newName.trim()) {
+            PoyoriEngine.setPetCustomName(state, newName.trim());
+            await saveState(state);
+            renderAll();
+          }
+        }
+      });
+    }
+  };
+
+  const carePetBtn = document.getElementById('btn-care-pet');
+  if (carePetBtn) carePetBtn.onclick = handlePetInteraction;
+  const overviewPetSprite = document.getElementById('overview-pet-img');
+  if (overviewPetSprite) overviewPetSprite.onclick = handlePetInteraction;
+  const brandPetSprite = document.getElementById('brand-sprite');
+  if (brandPetSprite) brandPetSprite.onclick = handlePetInteraction;
         badgeText: `STAGE ${evo.stage || 2} ・ ${evo.creature.branch.toUpperCase()}`,
         spriteUrl: getCreatureSprite(evo.newId, 'idle1', state.pet.accessory),
         description: evo.creature.desc || 'Your dedication and focused habits have guided Poyori to evolve!',
@@ -943,6 +989,50 @@ function renderWardrobe() {
 }
 
 /**
+ * Renders Mochimori Market (Provisions & Medicine)
+ */
+function renderMarket() {
+  const grid = document.getElementById('market-items-grid');
+  if (!grid) return;
+  const inv = state.inventory || {};
+
+  grid.innerHTML = Object.values(FOOD_ITEMS).map(food => {
+    const qty = inv[food.id] || 0;
+    const canAfford = state.koban >= food.cost;
+    const effectDesc = food.curesIllness 
+      ? 'Cures sickness & restores health' 
+      : `+${food.hungerRestore} Hunger, +${food.energyRestore} Energy`;
+
+    return `
+      <div class="wardrobe-card">
+        <div class="wardrobe-card-icon">${getPixelIconHtml(food.iconKey || 'apple', 24)}</div>
+        <strong>${food.name} (${food.jaName})</strong>
+        <p style="font-size: 8px; color: var(--c-parchment-dark); margin: 2px 0;">${food.desc || effectDesc}</p>
+        <small style="color: var(--accent-cyan); font-weight: bold;">In Bag: x${qty}</small>
+        <button class="btn-primary market-buy-btn" data-id="${food.id}" data-cost="${food.cost}" ${!canAfford ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
+          ${getPixelIconHtml('coin', 11)} ${food.cost} Buy
+        </button>
+      </div>
+    `;
+  }).join('');
+
+  grid.querySelectorAll('.market-buy-btn').forEach(b => {
+    b.onclick = async () => {
+      const id = b.dataset.id;
+      const res = PoyoriEngine.buyFoodItem(state, id);
+      if (res.success) {
+        audioSynth.coin();
+        await saveState(state);
+        renderSidebar();
+        renderMarket();
+      } else {
+        audioSynth.error();
+      }
+    };
+  });
+}
+
+/**
  * Renders Website Tracking Manager
  */
 function renderWebsites() {
@@ -984,6 +1074,34 @@ function renderWebsites() {
       renderWebsites();
     };
   });
+
+  // Render expanded built-in presets dynamically
+  const presetWrap = document.getElementById('preset-badges-wrap');
+  if (presetWrap && typeof DOMAIN_PRESETS !== 'undefined') {
+    const denkiList = (DOMAIN_PRESETS.educational?.denki || []).join(', ');
+    const chishikiList = (DOMAIN_PRESETS.educational?.chishiki || []).join(', ');
+    const monogatariList = (DOMAIN_PRESETS.educational?.monogatari || []).join(', ');
+    const distractingList = (DOMAIN_PRESETS.distracting || []).join(', ');
+
+    presetWrap.innerHTML = `
+      <div class="preset-col">
+        <strong>Denki (Coding - ${DOMAIN_PRESETS.educational?.denki?.length || 0} Domains)</strong>
+        <p>${escapeHtml(denkiList)}</p>
+      </div>
+      <div class="preset-col">
+        <strong>Chishiki (Scholar - ${DOMAIN_PRESETS.educational?.chishiki?.length || 0} Domains)</strong>
+        <p>${escapeHtml(chishikiList)}</p>
+      </div>
+      <div class="preset-col">
+        <strong>Monogatari (Story - ${DOMAIN_PRESETS.educational?.monogatari?.length || 0} Domains)</strong>
+        <p>${escapeHtml(monogatariList)}</p>
+      </div>
+      <div class="preset-col">
+        <strong>Distracting (${DOMAIN_PRESETS.distracting?.length || 0} Domains)</strong>
+        <p>${escapeHtml(distractingList)}</p>
+      </div>
+    `;
+  }
 }
 
 function setupWebsiteActions() {

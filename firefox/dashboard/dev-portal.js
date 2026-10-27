@@ -5,7 +5,7 @@
  */
 
 import { getState, saveState } from '../shared/storage.js';
-import { CREATURES, STAGES, FOOD_ITEMS, ACCESSORIES, PALETTES, DEFAULT_STATE } from '../shared/constants.js';
+import { CREATURES, STAGES, FOOD_ITEMS, ACCESSORIES, PALETTES, CREATURE_THEMES, DEFAULT_STATE } from '../shared/constants.js';
 import { PoyoriEngine } from '../shared/game-engine.js';
 import { getCreatureSprite } from '../content/sprites.js';
 import { getPixelIconHtml, getPixelIconUrl } from '../shared/pixel-icons.js';
@@ -139,7 +139,7 @@ function setupCreatureMorpher() {
     await saveState(state);
     updateDisplay();
     updatePreview();
-    logDev('GOD MODE APPLIED: 99,999 Koban, 24 Creatures, All Foods, All Wardrobe');
+    logDev('GOD MODE APPLIED: 99,999 Koban, 24 Creatures, All Foods, All Wardrobe, All Color Themes');
 
     if (celebrationModal) {
       celebrationModal.show({
@@ -149,11 +149,26 @@ function setupCreatureMorpher() {
         name: '99,999 Koban + All 24 Creatures Unlocked',
         badgeText: 'DEV GOD MODE',
         spriteUrl: getCreatureSprite(state.pet.creatureId, 'idle1', state.pet.accessory),
-        desc: 'All features, accessories, foods, and evolutions are now accessible for testing.',
+        desc: 'All features, accessories, foods, color themes, and evolutions are now accessible for testing.',
         actionLabel: 'Proceed with Tests!'
       });
     }
   });
+
+  const btnUnlockThemes = document.getElementById('btn-unlock-all-themes');
+  if (btnUnlockThemes) {
+    btnUnlockThemes.addEventListener('click', async () => {
+      state.pet = state.pet || {};
+      state.pet.unlockedThemes = Object.keys(CREATURE_THEMES);
+      if (Array.isArray(state.roster)) {
+        state.roster.forEach(c => { c.unlockedThemes = Object.keys(CREATURE_THEMES); });
+      }
+      audioSynth.shinkaFanfare();
+      await saveState(state);
+      updateDisplay();
+      logDev('Unlocked all 6 creature color theme palettes for active pet and roster!');
+    });
+  }
 }
 
 /**

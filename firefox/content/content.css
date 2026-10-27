@@ -229,3 +229,11 @@
   background: #e89555;
 }
 
+/* Global Font Size Scale overrides */
+:host(.font-size-large) {
+  zoom: 1.15;
+}
+:host(.font-size-huge) {
+  zoom: 1.30;
+}
+

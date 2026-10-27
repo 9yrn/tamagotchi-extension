@@ -207,8 +207,10 @@ export class HandheldModal {
     
     // Evaluate Mood & Pose
     const mood = PoyoriEngine.getPetMood(this.state);
+    const isPetted = this.isBlushing || (Date.now() - (pet.lastPettedAt || 0) < 2500);
     let pose = 'idle1';
-    if (pet.isSleeping) pose = 'sleep';
+    if (isPetted) pose = 'petted';
+    else if (pet.isSleeping) pose = 'sleep';
     else if (mood === 'grumpy') pose = 'grumpy';
     else if (pet.isSick) pose = 'idle1';
 
@@ -224,6 +226,7 @@ export class HandheldModal {
     else if (mood === 'sick') { moodTerm = getTerm('moodSick', mode); moodIcon = 'cross'; }
 
     const isPocket = this.state.settings?.pocketMode === true || this.state.settings?.petVisible === false;
+    const isHardcore = this.state.settings?.consequenceMode === 'hardcore';
 
     return `
       <div class="poyori-status-view">
@@ -234,6 +237,7 @@ export class HandheldModal {
             <div class="poyori-badge-tag ${isPocket ? 'pocket-active' : ''}" style="${isPocket ? 'background:#fedb72;color:#24140e;font-weight:bold;' : ''}">${isPocket ? '[POCKET]' : stageTerm}</div>
             <div class="poyori-breed-tag">${(creature.breedName || creature.breed || 'Pet').toUpperCase()}</div>
             <div class="poyori-mood-tag ${mood}">${getPixelIconHtml(moodIcon, 10)} ${getTerm('mood', mode)}: ${isPocket ? 'Resting' : moodTerm}</div>
+            <div class="poyori-mode-badge" style="font-size: 7px; font-weight: bold; margin-top: 3px; color: ${isHardcore ? '#d63031' : '#0984e3'}; letter-spacing: 0.5px;">${isHardcore ? '[HARDCORE]' : '[COZY]'}</div>
           </div>
           <!-- Center/Right Creature Sprite & Name Display -->
           <div class="poyori-portrait-creature-center">
@@ -896,9 +900,14 @@ export class HandheldModal {
       carePetBtn.addEventListener('click', () => {
         audioSynth.purr();
         PoyoriEngine.pet(this.state);
+        this.isBlushing = true;
         this.onPetAction('pet');
         this.onStateChange(this.state);
         this.render();
+        setTimeout(() => {
+          this.isBlushing = false;
+          this.render();
+        }, 2500);
       });
     }
 

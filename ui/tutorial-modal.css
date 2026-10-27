@@ -225,6 +225,56 @@
   text-align: center;
 }
 
+.tutorial-mode-select-wrap {
+  width: 100%;
+  margin-bottom: 14px;
+}
+
+.tutorial-mode-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+}
+
+.tutorial-mode-card {
+  background: var(--c-slate-inner, #1a1e29);
+  border: 2px solid var(--c-dark-rim, #24140e);
+  border-radius: 6px;
+  padding: 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+}
+
+.tutorial-mode-card:hover {
+  background: #272f42;
+  border-color: var(--c-wood-light, #d88344);
+}
+
+.tutorial-mode-card.selected {
+  background: #1c2738;
+  border-color: var(--c-cyan, #45b7b8) !important;
+  box-shadow: 0 0 12px rgba(69, 183, 184, 0.5), inset 0 0 6px rgba(69, 183, 184, 0.3) !important;
+}
+
+.tutorial-mode-title {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 9px;
+  color: var(--c-gold-hilite, #fedb72);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tutorial-mode-desc {
+  font-size: 10px;
+  line-height: 1.4;
+  color: var(--c-parchment-dark, #ddc29a);
+}
+
 /* Naming Input Box */
 .tutorial-naming-box {
   width: 100%;

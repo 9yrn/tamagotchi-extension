@@ -1052,16 +1052,48 @@ body {
 /* Global Font Size Scale overrides */
 html.font-size-large {
   font-size: 118%;
+  zoom: 1.15;
 }
 html.font-size-large body {
   font-size: 118%;
 }
 html.font-size-huge {
   font-size: 132%;
+  zoom: 1.30;
 }
 html.font-size-huge body {
   font-size: 132%;
 }
+
+.preset-badges-wrap {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+.preset-col {
+  background: var(--c-slate-inner);
+  border: 2px solid var(--c-dark-rim);
+  border-radius: 6px;
+  padding: 12px;
+  box-shadow: inset 0 0 0 1px var(--c-wood-dark);
+}
+.preset-col strong {
+  display: block;
+  font-family: var(--font-head);
+  font-size: 9px;
+  color: var(--accent-cyan);
+  margin-bottom: 6px;
+}
+.preset-col p {
+  font-family: var(--font-body);
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--c-parchment-dark);
+  word-break: break-word;
+  max-height: 120px;
+  overflow-y: auto;
+  margin: 0;
 }
 
 .theme-btn strong {

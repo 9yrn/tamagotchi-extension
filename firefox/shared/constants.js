@@ -740,8 +740,13 @@ export const ACCESSORIES = {
   none: { id: 'none', name: 'None', jaName: 'なし', iconKey: 'cross', cost: 0 },
   hachimaki: { id: 'hachimaki', name: 'Hachimaki', jaName: '鉢巻', enName: 'Focus Headband', iconKey: 'hachimaki', cost: 100 },
   tanuki_leaf: { id: 'tanuki_leaf', name: 'Tanuki Leaf', jaName: '木の葉', enName: 'Spirit Leaf', iconKey: 'tanuki_leaf', cost: 200 },
+  retro_glasses: { id: 'retro_glasses', name: 'Retro Glasses', jaName: '伊達眼鏡', enName: 'Pixel Glasses', iconKey: 'retro_glasses', cost: 250 },
+  cozy_scarf: { id: 'cozy_scarf', name: 'Cozy Scarf', jaName: '温かいマフラー', enName: 'Cozy Scarf', iconKey: 'cozy_scarf', cost: 350 },
   wizard_hat: { id: 'wizard_hat', name: 'Scholar Hat', jaName: '学者の帽子', enName: 'Wisdom Cap', iconKey: 'wizard_hat', cost: 400 },
   cyber_visor: { id: 'cyber_visor', name: 'Cyber Visor', jaName: '電脳バイザー', enName: 'Cyber Visor', iconKey: 'cyber_visor', cost: 650 },
+  ninja_cowl: { id: 'ninja_cowl', name: 'Shinobi Mask', jaName: '忍の面', enName: 'Ninja Mask', iconKey: 'ninja_cowl', cost: 750 },
+  red_cape: { id: 'red_cape', name: 'Hero Cape', jaName: '勇者のマント', enName: 'Hero Cape', iconKey: 'red_cape', cost: 900 },
+  samurai_helm: { id: 'samurai_helm', name: 'Samurai Kabuto', jaName: '兜', enName: 'Samurai Helm', iconKey: 'samurai_helm', cost: 1100 },
   golden_crown: { id: 'golden_crown', name: 'Kōmyō Crown', jaName: '光明の冠', enName: 'Radiant Crown', iconKey: 'crown', cost: 1200 }
 };
 

@@ -1604,3 +1604,14 @@
 .switch-roster-btn:hover {
   background: #3498db;
 }
+
+/* Global Font Size Scale overrides */
+:host(.font-size-large) .poyori-handheld-container,
+.font-size-large .poyori-handheld-container {
+  zoom: 1.15;
+}
+:host(.font-size-huge) .poyori-handheld-container,
+.font-size-huge .poyori-handheld-container {
+  zoom: 1.30;
+}
+}

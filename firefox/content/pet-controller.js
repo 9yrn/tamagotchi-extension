@@ -236,11 +236,39 @@ export class PoyoriController {
     }, duration);
   }
 
+  glideToFloor() {
+    const floorY = Math.max(10, window.innerHeight - this.sizePx - 6);
+    if (this.y >= floorY) return;
+
+    cancelAnimationFrame(this._glideRaf);
+    const startY = this.y;
+    const diff = floorY - startY;
+    const duration = 350;
+    const startTime = performance.now();
+
+    const step = (now) => {
+      if (this.isDragging) return;
+      const progress = Math.min(1, (now - startTime) / duration);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      this.y = startY + (diff * eased);
+      if (this.container) this.container.style.top = `${this.y}px`;
+      if (progress < 1) {
+        this._glideRaf = requestAnimationFrame(step);
+      } else {
+        this.y = floorY;
+        if (this.container) this.container.style.top = `${this.y}px`;
+      }
+    };
+    this._glideRaf = requestAnimationFrame(step);
+  }
+
   bindEvents() {
     // Drag & Drop
     this.container.addEventListener('pointerdown', (e) => {
       if (e.button !== 0) return; // Left click only
       this.isDragging = true;
+      try { this.container.setPointerCapture(e.pointerId); } catch (_) {}
+      cancelAnimationFrame(this._glideRaf);
       this.dragOffset.x = e.clientX - this.x;
       this.dragOffset.y = e.clientY - this.y;
       this.container.classList.add('dragging');
@@ -253,24 +281,41 @@ export class PoyoriController {
 
     window.addEventListener('pointermove', (e) => {
       if (!this.isDragging) return;
-      this.x = Math.max(10, Math.min(window.innerWidth - this.sizePx - 10, e.clientX - this.dragOffset.x));
-      this.y = Math.max(10, Math.min(window.innerHeight - this.sizePx - 6, e.clientY - this.dragOffset.y));
+      const maxX = Math.max(10, window.innerWidth - this.sizePx - 10);
+      const maxY = Math.max(0, window.innerHeight - this.sizePx - 6);
+      this.x = Math.max(0, Math.min(maxX, e.clientX - this.dragOffset.x));
+      this.y = Math.max(0, Math.min(maxY, e.clientY - this.dragOffset.y));
       this.container.style.left = `${this.x}px`;
       this.container.style.top = `${this.y}px`;
     });
 
-    window.addEventListener('pointerup', () => {
+    const endDrag = (e) => {
       if (!this.isDragging) return;
       this.isDragging = false;
+      try { if (e && e.pointerId) this.container.releasePointerCapture(e.pointerId); } catch (_) {}
       this.container.classList.remove('dragging');
-      // Snap to bottom if released in bottom third
-      if (this.y > window.innerHeight * 0.65) {
-        this.y = window.innerHeight - this.sizePx - 6;
-      }
-      this.container.style.top = `${this.y}px`;
+      this.glideToFloor();
       this.state = this.petData.isSleeping ? 'sleep' : 'idle';
       this.updateSpriteGraphics();
-    });
+    };
+    window.addEventListener('pointerup', endDrag);
+    window.addEventListener('pointercancel', endDrag);
+    window.addEventListener('blur', () => { if (this.isDragging) endDrag(); });
+
+    // Smooth tab switching: synchronize state when returning to tab
+    if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          this.lastFrameTime = performance.now();
+          if (this.petData.isSleeping) {
+            this.state = 'sleep';
+          } else if (this.state === 'sleep' && !this.petData.isSleeping) {
+            this.state = 'idle';
+          }
+          this.updateSpriteGraphics();
+        }
+      });
+    }
 
     // Window resize adjustment with boundary guarantees for responsive and Arc split views
     window.addEventListener('resize', () => {

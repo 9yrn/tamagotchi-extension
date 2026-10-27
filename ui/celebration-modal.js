@@ -106,8 +106,10 @@ export class CelebrationModal {
 
     // Determine visual showcase HTML
     let showcaseHtml = '';
-    if (spriteUrl) {
-      showcaseHtml = `<img src="${spriteUrl}" alt="${subtitle}" class="celebrate-sprite" />`;
+    if (spriteUrl && typeof spriteUrl === 'string' && spriteUrl.trim().startsWith('<')) {
+      showcaseHtml = `<div class="celebrate-icon-wrap">${spriteUrl}</div>`;
+    } else if (spriteUrl) {
+      showcaseHtml = `<img src="${spriteUrl}" alt="${subtitle || 'Celebration'}" class="celebrate-sprite" />`;
     } else {
       showcaseHtml = `<div class="celebrate-icon-wrap">${getPixelIconHtml(iconKey, 48)}</div>`;
     }

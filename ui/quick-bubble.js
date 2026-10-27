@@ -8,6 +8,11 @@ import { PoyoriEngine } from '../shared/game-engine.js';
 import { getTerm } from '../shared/constants.js';
 import { getPixelIconHtml } from '../shared/pixel-icons.js';
 
+function escapeHtml(str) {
+  if (typeof str !== 'string') return '';
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
 export class QuickBubble {
   constructor(shadowRoot, options = {}) {
     this.shadowRoot = shadowRoot;
@@ -17,6 +22,7 @@ export class QuickBubble {
 
     this.container = null;
     this.isOpen = false;
+    this._nudgeTimer = null;
     this.initDOM();
   }
 
@@ -57,25 +63,26 @@ export class QuickBubble {
 
     // Message with Grumpy neglect reaction and localization
     const mood = PoyoriEngine.getPetMood(state);
-    let moodMsg = `${pet.name} is cheerful! (ご機嫌)`;
-    if (mode === 'japanese') moodMsg = `${pet.name}はご機嫌です！`;
-    else if (mode === 'english') moodMsg = `${pet.name} is cheerful!`;
+    const safeName = escapeHtml(pet.name);
+    let moodMsg = `${safeName} is cheerful! (ご機嫌)`;
+    if (mode === 'japanese') moodMsg = `${safeName}はご機嫌です！`;
+    else if (mode === 'english') moodMsg = `${safeName} is cheerful!`;
 
     if (pet.isSleeping) {
-      moodMsg = mode === 'japanese' ? `${pet.name}はぐっすり眠っています… zzz` : `${pet.name} is sound asleep... zzz`;
+      moodMsg = mode === 'japanese' ? `${safeName}はぐっすり眠っています… zzz` : `${safeName} is sound asleep... zzz`;
     } else if (pet.isSick) {
-      moodMsg = mode === 'japanese' ? `${pet.name}は体調が悪そうです… 薬草を！` : `${pet.name} feels sick... needs medicine!`;
+      moodMsg = mode === 'japanese' ? `${safeName}は体調が悪そうです… 薬草を！` : `${safeName} feels sick... needs medicine!`;
     } else if (mood === 'grumpy') {
       moodMsg = mode === 'japanese' 
-        ? `ぷんぷん！${pet.name}は不機嫌です！構ってください！` 
-        : `Hmph! ${pet.name} is grumpy... give me snacks and attention!`;
+        ? `ぷんぷん！${safeName}は不機嫌です！構ってください！` 
+        : `Hmph! ${safeName} is grumpy... give me snacks and attention!`;
     } else if (pet.onaka < 30) {
-      moodMsg = mode === 'japanese' ? `${pet.name}はお腹が空いています！` : `${pet.name} is feeling hungry!`;
+      moodMsg = mode === 'japanese' ? `${safeName}はお腹が空いています！` : `${safeName} is feeling hungry!`;
     }
 
     this.container.innerHTML = `
       <div class="bubble-header">
-        <span class="bubble-title">${getPixelIconHtml('star', 12)} ${pet.name}</span>
+        <span class="bubble-title">${getPixelIconHtml('star', 12)} ${safeName}</span>
         <button class="bubble-close">${getPixelIconHtml('cross', 10)}</button>
       </div>
       <div class="bubble-msg">${moodMsg}</div>
@@ -117,6 +124,25 @@ export class QuickBubble {
       this.close();
       this.onOpenDevice();
     });
+  }
+
+  showNudge(message, petX, petY) {
+    this.isOpen = true;
+    const bubbleX = Math.max(10, Math.min(window.innerWidth - 240, petX - 80));
+    const bubbleY = Math.max(10, petY - 110);
+    this.container.style.left = `${bubbleX}px`;
+    this.container.style.top = `${bubbleY}px`;
+    this.container.style.display = 'flex';
+    this.container.innerHTML = `
+      <div class="bubble-header">
+        <span class="bubble-title" style="color: #fedb72;">${getPixelIconHtml('spark', 12)} Focus Nudge</span>
+        <button class="bubble-close">${getPixelIconHtml('cross', 10)}</button>
+      </div>
+      <div class="bubble-msg" style="font-size: 8px; font-weight: bold; line-height: 1.4;">${escapeHtml(message)}</div>
+    `;
+    this.container.querySelector('.bubble-close').addEventListener('click', () => this.close());
+    clearTimeout(this._nudgeTimer);
+    this._nudgeTimer = setTimeout(() => this.close(), 4000);
   }
 
   close() {

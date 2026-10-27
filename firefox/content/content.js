@@ -31,7 +31,7 @@ import { getPixelIconHtml } from '../shared/pixel-icons.js';
   // Intercept blocked domains and redirect to silly decree page
   if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL) {
     if (PoyoriEngine.isBlocked(window.location.hostname, state)) {
-      window.location.href = chrome.runtime.getURL('blocked/blocked.html?domain=' + encodeURIComponent(window.location.hostname));
+      window.location.replace(chrome.runtime.getURL('blocked/blocked.html?domain=' + encodeURIComponent(window.location.hostname)));
       return;
     }
   }
@@ -41,6 +41,12 @@ import { getPixelIconHtml } from '../shared/pixel-icons.js';
     audioSynth.setVolume(state.settings.soundVolume);
     audioSynth.setMuted(state.settings.soundMuted);
   }
+
+  const applyHostFont = (fSize) => {
+    host.classList.remove('font-size-normal', 'font-size-large', 'font-size-huge');
+    host.classList.add(`font-size-${fSize || 'normal'}`);
+  };
+  applyHostFont(state.settings?.fontSize);
 
   // Initialize Handheld Device Modal
   const handheld = new HandheldModal(shadowRoot, {
@@ -127,6 +133,7 @@ import { getPixelIconHtml } from '../shared/pixel-icons.js';
   subscribeState((newState) => {
     if (!newState) return;
     state = newState;
+    applyHostFont(state.settings?.fontSize);
     controller.updatePetData(state.pet, state.settings);
     handheld.updateState(state);
   });
@@ -151,6 +158,10 @@ import { getPixelIconHtml } from '../shared/pixel-icons.js';
         sendResponse({ success: true });
       } else if (msg.action === 'toggle_pet_visibility') {
         controller.setVisibility(!msg.pocketMode && msg.visible !== false);
+        sendResponse({ success: true });
+      } else if (msg.action === 'focus_nudge') {
+        controller.showEmote('sweat', 2500);
+        bubble.showNudge(msg.message || 'Stay focused on your quest!', controller.x, controller.y);
         sendResponse({ success: true });
       } else if (msg.action === 'classification_updated') {
         getState().then(freshState => {

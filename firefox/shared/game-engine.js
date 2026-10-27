@@ -25,30 +25,34 @@ export class PoyoriEngine {
 
     // Hunger decay (approx 5% per hour when awake, 2% when asleep)
     const hungerDecayRate = pet.isSleeping ? 0.033 : 0.083; // points per minute
-    pet.onaka = Math.max(0, Math.round(pet.onaka - (elapsedMinutes * hungerDecayRate)));
+    pet.onaka = Math.max(0, Math.min(100, pet.onaka - (elapsedMinutes * hungerDecayRate)));
 
     // Energy regeneration while sleeping, decay while awake
     if (pet.isSleeping) {
-      pet.genki = Math.min(100, Math.round(pet.genki + (elapsedMinutes * 0.2)));
+      pet.genki = Math.min(100, pet.genki + (elapsedMinutes * 0.2));
       // Wake up if full energy and not in scheduled bedtime
       if (pet.genki >= 95 && !this.isBedtime(state.settings.bedtimeStart, state.settings.bedtimeEnd)) {
         pet.isSleeping = false;
       }
     } else {
       // Gentle waking energy decay
-      pet.genki = Math.max(0, Math.round(pet.genki - (elapsedMinutes * 0.02)));
+      pet.genki = Math.max(0, pet.genki - (elapsedMinutes * 0.02));
     }
 
     // Sickness check
     if (pet.onaka <= 0) {
       if (!pet.isSick) {
         pet.isSick = true;
+        pet.sickSince = currentTime;
       }
+    } else if (pet.isSick && !pet.sickSince) {
+      pet.sickSince = currentTime;
     }
 
     // Hardcore neglect consequence check
     if (state.settings.consequenceMode === 'hardcore' && pet.isSick) {
-      const sickDurationHours = (currentTime - pet.lastFedAt) / (1000 * 60 * 60);
+      const sickOrigin = pet.sickSince || pet.lastFedAt || currentTime;
+      const sickDurationHours = (currentTime - sickOrigin) / (1000 * 60 * 60);
       if (sickDurationHours > 48) {
         // Pet runs away / tombstone event
         return {
@@ -149,7 +153,7 @@ export class PoyoriEngine {
   }
 
   /**
-   * Adds a user task with fixed rewards (15 coins, 1 ringo)
+   * Adds a user task with fixed rewards (10 coins, 1 ringo)
    * Disallows setting custom rewards so users cannot cheat their own economy.
    */
   static addTask(state, title, options = {}) {
@@ -264,11 +268,18 @@ export class PoyoriEngine {
         state.stats.totalMinutesEdu[counterpart] = (state.stats.totalMinutesEdu[counterpart] || 0) + minutes;
       }
       
-      // Award XP (1 minute = 2 XP)
+      // Award slow, steady XP for educational browsing (approx 1 XP per 2 minutes, max 0.5/min)
       if (!pet.isSleeping && !pet.isSick) {
-        const xpGain = Math.max(1, Math.round(minutes * 2));
-        pet.xp += xpGain;
-        pet.kizuna = Math.min(100, pet.kizuna + 0.1);
+        const xpGain = minutes >= 2 ? Math.floor(minutes * 0.5) : (minutes >= 1 ? 1 : 0);
+        if (xpGain > 0) {
+          pet.xp += xpGain;
+          pet.level = this.calculateLevel(pet.xp);
+          if (Array.isArray(state.roster) && state.roster[state.activeRosterIndex || 0]) {
+            state.roster[state.activeRosterIndex || 0].xp = pet.xp;
+            state.roster[state.activeRosterIndex || 0].level = pet.level;
+          }
+        }
+        pet.kizuna = Math.min(100, pet.kizuna + (minutes * 0.05));
       }
 
       // Update Daily Quests
@@ -317,10 +328,18 @@ export class PoyoriEngine {
     pet.onaka = Math.min(100, pet.onaka + (item.hungerRestore || 0));
     pet.genki = Math.min(100, pet.genki + (item.energyRestore || 0));
     pet.kizuna = Math.min(100, pet.kizuna + (item.kizunaBoost || 0));
-    if (item.xpBoost) pet.xp += item.xpBoost;
+    if (item.xpBoost) {
+      pet.xp += item.xpBoost;
+      pet.level = this.calculateLevel(pet.xp);
+      if (Array.isArray(state.roster) && state.roster[state.activeRosterIndex || 0]) {
+        state.roster[state.activeRosterIndex || 0].xp = pet.xp;
+        state.roster[state.activeRosterIndex || 0].level = pet.level;
+      }
+    }
 
     if (item.curesIllness && pet.isSick) {
       pet.isSick = false;
+      pet.sickSince = null;
     }
 
     pet.lastFedAt = Date.now();
@@ -394,7 +413,8 @@ export class PoyoriEngine {
 
     // Check 7-day streak for Kōmyō radiant form (eligible once reaching Adult stage 5+)
     if (pet.stage >= 5 && !pet.isKomyo && state.stats.currentStreak >= 7) {
-      return this.triggerKomyo(state);
+      const komyoRes = this.triggerKomyo(state);
+      if (komyoRes && komyoRes.evolved) return komyoRes;
     }
 
     if (!nextStageMeta) {
@@ -424,6 +444,9 @@ export class PoyoriEngine {
     const branchMap = { denki: 'coding', chishiki: 'research', monogatari: 'literature' };
     pet.chosenBranch = branch;
     pet.stage = nextStageMeta ? nextStageMeta.level : pet.stage;
+    if (pet.stage >= 2) {
+      pet.isHatched = true;
+    }
 
     // Find creature matching branch and new stage
     const newCreature = Object.values(CREATURES).find(
@@ -437,6 +460,14 @@ export class PoyoriEngine {
       pet.creatureId = newCreature.id;
       if (!state.stats.evolutionsDiscovered.includes(newCreature.id)) {
         state.stats.evolutionsDiscovered.push(newCreature.id);
+      }
+      if (Array.isArray(state.roster) && state.roster[state.activeRosterIndex || 0]) {
+        const activeComp = state.roster[state.activeRosterIndex || 0];
+        activeComp.creatureId = newCreature.id;
+        activeComp.name = pet.name;
+        activeComp.stage = pet.stage;
+        activeComp.level = pet.level || 1;
+        activeComp.xp = pet.xp || 0;
       }
       return {
         evolved: true,
@@ -505,6 +536,12 @@ export class PoyoriEngine {
       if (!state.stats.evolutionsDiscovered.includes(komyoCreature.id)) {
         state.stats.evolutionsDiscovered.push(komyoCreature.id);
       }
+      if (Array.isArray(state.roster) && state.roster[state.activeRosterIndex || 0]) {
+        const activeComp = state.roster[state.activeRosterIndex || 0];
+        activeComp.creatureId = komyoCreature.id;
+        activeComp.name = pet.name;
+        activeComp.stage = 6;
+      }
       return {
         evolved: true,
         isKomyo: true,
@@ -552,15 +589,27 @@ export class PoyoriEngine {
   }
 
   /**
+   * Returns YYYY-MM-DD representing local calendar date (respecting player timezone)
+   */
+  static getLocalDateString(d = new Date()) {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  /**
    * Daily streak maintenance check
    */
   static checkDailyStreak(state) {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = this.getLocalDateString();
     const lastActive = state.stats.lastActiveDate;
 
     if (today === lastActive) return false;
 
-    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    const yDate = new Date();
+    yDate.setDate(yDate.getDate() - 1);
+    const yesterday = this.getLocalDateString(yDate);
     if (lastActive === yesterday) {
       state.stats.currentStreak += 1;
       if (state.stats.currentStreak > state.stats.bestStreak) {
@@ -648,6 +697,15 @@ export class PoyoriEngine {
       state.stats.evolutionsDiscovered.push(creature.id);
     }
 
+    if (Array.isArray(state.roster) && state.roster[state.activeRosterIndex || 0]) {
+      const activeComp = state.roster[state.activeRosterIndex || 0];
+      activeComp.creatureId = creature.id;
+      activeComp.name = creature.name;
+      activeComp.stage = creature.stage;
+      activeComp.level = state.pet.level || 1;
+      activeComp.xp = state.pet.xp || 0;
+    }
+
     state.pet.mood = this.getPetMood(state);
     return { success: true, creature, pet: state.pet };
   }
@@ -720,6 +778,8 @@ export class PoyoriEngine {
       if (backup.tasks) state.tasks = JSON.parse(JSON.stringify(backup.tasks));
       if (backup.dailyQuests) state.dailyQuests = JSON.parse(JSON.stringify(backup.dailyQuests));
       if (backup.settings) state.settings = JSON.parse(JSON.stringify(backup.settings));
+      if (backup.roster) state.roster = JSON.parse(JSON.stringify(backup.roster));
+      if (backup.activeRosterIndex !== undefined) state.activeRosterIndex = backup.activeRosterIndex;
       delete state.devOriginalStateBackup;
       delete state.isDevModeActive;
       return { success: true, restored: true, state };
@@ -1140,6 +1200,17 @@ export class PoyoriEngine {
       state.roster[state.activeRosterIndex || 0].theme = themeId;
     }
     return { success: true, theme: themeId };
+  }
+
+  /**
+   * Sets the global font size scale preference ('normal' | 'large' | 'huge')
+   */
+  static setFontSize(state, sizeKey) {
+    if (!state || !state.settings) return { success: false, reason: 'no_settings' };
+    const allowed = ['normal', 'large', 'huge'];
+    if (!allowed.includes(sizeKey)) return { success: false, reason: 'invalid_size' };
+    state.settings.fontSize = sizeKey;
+    return { success: true, fontSize: sizeKey };
   }
 
 }

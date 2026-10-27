@@ -67,8 +67,7 @@
         "assets/fonts/*",
         "blocked/*",
         "content/*",
-        "ui/*",
-        "dashboard/*"
+        "ui/*"
       ],
       "matches": [
         "<all_urls>"

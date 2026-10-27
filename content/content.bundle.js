@@ -1133,6 +1133,7 @@ const DEFAULT_STATE = {
     petSize: 'normal', // 'small' (48px) | 'normal' (64px) | 'large' (80px) | 'giant' (96px)
     petSizePx: 64,
     petScale: 1.0,
+    fontSize: 'normal', // 'normal' (1.0x) | 'large' (1.2x) | 'huge' (1.35x)
     soundVolume: 0.5,
     soundMuted: false,
     silenceOnAudioTabs: true,
@@ -1689,6 +1690,8 @@ function getStorageApi() {
   return null;
 }
 
+let pendingInitPromise = null;
+
 /**
  * Retrieves the current game state from storage.
  * If no state exists yet (e.g. on first launch), it initializes and returns the default state.
@@ -1696,7 +1699,11 @@ function getStorageApi() {
  * @returns {Promise<Object>} The latest Poyori game state.
  */
 async function getState() {
-  return new Promise((resolve) => {
+  if (pendingInitPromise) {
+    return pendingInitPromise;
+  }
+
+  pendingInitPromise = new Promise((resolve) => {
     const api = getStorageApi();
     // Graceful fallback for non-extension environments (e.g., automated tests or standalone dev)
     if (!api) {
@@ -1714,7 +1721,7 @@ async function getState() {
       if ((api.runtime && api.runtime.lastError) || !result || !result[STORAGE_KEY]) {
         // First-time setup: initialize and save default state
         const initial = JSON.parse(JSON.stringify(DEFAULT_STATE));
-        if (initial.pet) {
+        if (initial.pet && !initial.pet.gender) {
           initial.pet.gender = Math.random() < 0.5 ? 'male' : 'female';
         }
         api.storage.local.set({ [STORAGE_KEY]: initial }, () => {
@@ -1729,7 +1736,11 @@ async function getState() {
         resolve(merged);
       }
     });
+  }).finally(() => {
+    pendingInitPromise = null;
   });
+
+  return pendingInitPromise;
 }
 
 /**
@@ -1749,23 +1760,8 @@ async function saveState(state) {
       return;
     }
 
-    // Read latest storage to safely merge concurrent updates before persisting
-    api.storage.local.get([STORAGE_KEY], (res) => {
-      let toPersist = state;
-      if (res && res[STORAGE_KEY]) {
-        const remote = res[STORAGE_KEY];
-        if (remote.koban !== undefined && state.koban !== undefined) {
-          toPersist.koban = Math.max(state.koban, remote.koban);
-        }
-        if (remote.pet && state.pet) {
-          if (remote.pet.xp > state.pet.xp) toPersist.pet.xp = remote.pet.xp;
-          if (remote.pet.level > state.pet.level) toPersist.pet.level = remote.pet.level;
-          if (!toPersist.pet.gender && remote.pet.gender) toPersist.pet.gender = remote.pet.gender;
-        }
-      }
-      api.storage.local.set({ [STORAGE_KEY]: toPersist }, () => {
-        resolve(toPersist);
-      });
+    api.storage.local.set({ [STORAGE_KEY]: state }, () => {
+      resolve(state);
     });
   });
 }
@@ -1844,30 +1840,34 @@ class PoyoriEngine {
 
     // Hunger decay (approx 5% per hour when awake, 2% when asleep)
     const hungerDecayRate = pet.isSleeping ? 0.033 : 0.083; // points per minute
-    pet.onaka = Math.max(0, Math.round(pet.onaka - (elapsedMinutes * hungerDecayRate)));
+    pet.onaka = Math.max(0, Math.min(100, pet.onaka - (elapsedMinutes * hungerDecayRate)));
 
     // Energy regeneration while sleeping, decay while awake
     if (pet.isSleeping) {
-      pet.genki = Math.min(100, Math.round(pet.genki + (elapsedMinutes * 0.2)));
+      pet.genki = Math.min(100, pet.genki + (elapsedMinutes * 0.2));
       // Wake up if full energy and not in scheduled bedtime
       if (pet.genki >= 95 && !this.isBedtime(state.settings.bedtimeStart, state.settings.bedtimeEnd)) {
         pet.isSleeping = false;
       }
     } else {
       // Gentle waking energy decay
-      pet.genki = Math.max(0, Math.round(pet.genki - (elapsedMinutes * 0.02)));
+      pet.genki = Math.max(0, pet.genki - (elapsedMinutes * 0.02));
     }
 
     // Sickness check
     if (pet.onaka <= 0) {
       if (!pet.isSick) {
         pet.isSick = true;
+        pet.sickSince = currentTime;
       }
+    } else if (pet.isSick && !pet.sickSince) {
+      pet.sickSince = currentTime;
     }
 
     // Hardcore neglect consequence check
     if (state.settings.consequenceMode === 'hardcore' && pet.isSick) {
-      const sickDurationHours = (currentTime - pet.lastFedAt) / (1000 * 60 * 60);
+      const sickOrigin = pet.sickSince || pet.lastFedAt || currentTime;
+      const sickDurationHours = (currentTime - sickOrigin) / (1000 * 60 * 60);
       if (sickDurationHours > 48) {
         // Pet runs away / tombstone event
         return {
@@ -1968,7 +1968,7 @@ class PoyoriEngine {
   }
 
   /**
-   * Adds a user task with fixed rewards (15 coins, 1 ringo)
+   * Adds a user task with fixed rewards (10 coins, 1 ringo)
    * Disallows setting custom rewards so users cannot cheat their own economy.
    */
   static addTask(state, title, options = {}) {
@@ -2083,11 +2083,18 @@ class PoyoriEngine {
         state.stats.totalMinutesEdu[counterpart] = (state.stats.totalMinutesEdu[counterpart] || 0) + minutes;
       }
       
-      // Award XP (1 minute = 2 XP)
+      // Award slow, steady XP for educational browsing (approx 1 XP per 2 minutes, max 0.5/min)
       if (!pet.isSleeping && !pet.isSick) {
-        const xpGain = Math.max(1, Math.round(minutes * 2));
-        pet.xp += xpGain;
-        pet.kizuna = Math.min(100, pet.kizuna + 0.1);
+        const xpGain = minutes >= 2 ? Math.floor(minutes * 0.5) : (minutes >= 1 ? 1 : 0);
+        if (xpGain > 0) {
+          pet.xp += xpGain;
+          pet.level = this.calculateLevel(pet.xp);
+          if (Array.isArray(state.roster) && state.roster[state.activeRosterIndex || 0]) {
+            state.roster[state.activeRosterIndex || 0].xp = pet.xp;
+            state.roster[state.activeRosterIndex || 0].level = pet.level;
+          }
+        }
+        pet.kizuna = Math.min(100, pet.kizuna + (minutes * 0.05));
       }
 
       // Update Daily Quests
@@ -2136,10 +2143,18 @@ class PoyoriEngine {
     pet.onaka = Math.min(100, pet.onaka + (item.hungerRestore || 0));
     pet.genki = Math.min(100, pet.genki + (item.energyRestore || 0));
     pet.kizuna = Math.min(100, pet.kizuna + (item.kizunaBoost || 0));
-    if (item.xpBoost) pet.xp += item.xpBoost;
+    if (item.xpBoost) {
+      pet.xp += item.xpBoost;
+      pet.level = this.calculateLevel(pet.xp);
+      if (Array.isArray(state.roster) && state.roster[state.activeRosterIndex || 0]) {
+        state.roster[state.activeRosterIndex || 0].xp = pet.xp;
+        state.roster[state.activeRosterIndex || 0].level = pet.level;
+      }
+    }
 
     if (item.curesIllness && pet.isSick) {
       pet.isSick = false;
+      pet.sickSince = null;
     }
 
     pet.lastFedAt = Date.now();
@@ -2213,7 +2228,8 @@ class PoyoriEngine {
 
     // Check 7-day streak for Kōmyō radiant form (eligible once reaching Adult stage 5+)
     if (pet.stage >= 5 && !pet.isKomyo && state.stats.currentStreak >= 7) {
-      return this.triggerKomyo(state);
+      const komyoRes = this.triggerKomyo(state);
+      if (komyoRes && komyoRes.evolved) return komyoRes;
     }
 
     if (!nextStageMeta) {
@@ -2243,6 +2259,9 @@ class PoyoriEngine {
     const branchMap = { denki: 'coding', chishiki: 'research', monogatari: 'literature' };
     pet.chosenBranch = branch;
     pet.stage = nextStageMeta ? nextStageMeta.level : pet.stage;
+    if (pet.stage >= 2) {
+      pet.isHatched = true;
+    }
 
     // Find creature matching branch and new stage
     const newCreature = Object.values(CREATURES).find(
@@ -2256,6 +2275,14 @@ class PoyoriEngine {
       pet.creatureId = newCreature.id;
       if (!state.stats.evolutionsDiscovered.includes(newCreature.id)) {
         state.stats.evolutionsDiscovered.push(newCreature.id);
+      }
+      if (Array.isArray(state.roster) && state.roster[state.activeRosterIndex || 0]) {
+        const activeComp = state.roster[state.activeRosterIndex || 0];
+        activeComp.creatureId = newCreature.id;
+        activeComp.name = pet.name;
+        activeComp.stage = pet.stage;
+        activeComp.level = pet.level || 1;
+        activeComp.xp = pet.xp || 0;
       }
       return {
         evolved: true,
@@ -2324,6 +2351,12 @@ class PoyoriEngine {
       if (!state.stats.evolutionsDiscovered.includes(komyoCreature.id)) {
         state.stats.evolutionsDiscovered.push(komyoCreature.id);
       }
+      if (Array.isArray(state.roster) && state.roster[state.activeRosterIndex || 0]) {
+        const activeComp = state.roster[state.activeRosterIndex || 0];
+        activeComp.creatureId = komyoCreature.id;
+        activeComp.name = pet.name;
+        activeComp.stage = 6;
+      }
       return {
         evolved: true,
         isKomyo: true,
@@ -2371,15 +2404,27 @@ class PoyoriEngine {
   }
 
   /**
+   * Returns YYYY-MM-DD representing local calendar date (respecting player timezone)
+   */
+  static getLocalDateString(d = new Date()) {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  /**
    * Daily streak maintenance check
    */
   static checkDailyStreak(state) {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = this.getLocalDateString();
     const lastActive = state.stats.lastActiveDate;
 
     if (today === lastActive) return false;
 
-    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    const yDate = new Date();
+    yDate.setDate(yDate.getDate() - 1);
+    const yesterday = this.getLocalDateString(yDate);
     if (lastActive === yesterday) {
       state.stats.currentStreak += 1;
       if (state.stats.currentStreak > state.stats.bestStreak) {
@@ -2467,6 +2512,15 @@ class PoyoriEngine {
       state.stats.evolutionsDiscovered.push(creature.id);
     }
 
+    if (Array.isArray(state.roster) && state.roster[state.activeRosterIndex || 0]) {
+      const activeComp = state.roster[state.activeRosterIndex || 0];
+      activeComp.creatureId = creature.id;
+      activeComp.name = creature.name;
+      activeComp.stage = creature.stage;
+      activeComp.level = state.pet.level || 1;
+      activeComp.xp = state.pet.xp || 0;
+    }
+
     state.pet.mood = this.getPetMood(state);
     return { success: true, creature, pet: state.pet };
   }
@@ -2539,6 +2593,8 @@ class PoyoriEngine {
       if (backup.tasks) state.tasks = JSON.parse(JSON.stringify(backup.tasks));
       if (backup.dailyQuests) state.dailyQuests = JSON.parse(JSON.stringify(backup.dailyQuests));
       if (backup.settings) state.settings = JSON.parse(JSON.stringify(backup.settings));
+      if (backup.roster) state.roster = JSON.parse(JSON.stringify(backup.roster));
+      if (backup.activeRosterIndex !== undefined) state.activeRosterIndex = backup.activeRosterIndex;
       delete state.devOriginalStateBackup;
       delete state.isDevModeActive;
       return { success: true, restored: true, state };
@@ -2959,6 +3015,17 @@ class PoyoriEngine {
       state.roster[state.activeRosterIndex || 0].theme = themeId;
     }
     return { success: true, theme: themeId };
+  }
+
+  /**
+   * Sets the global font size scale preference ('normal' | 'large' | 'huge')
+   */
+  static setFontSize(state, sizeKey) {
+    if (!state || !state.settings) return { success: false, reason: 'no_settings' };
+    const allowed = ['normal', 'large', 'huge'];
+    if (!allowed.includes(sizeKey)) return { success: false, reason: 'invalid_size' };
+    state.settings.fontSize = sizeKey;
+    return { success: true, fontSize: sizeKey };
   }
 
 }
@@ -5612,11 +5679,39 @@ class PoyoriController {
     }, duration);
   }
 
+  glideToFloor() {
+    const floorY = Math.max(10, window.innerHeight - this.sizePx - 6);
+    if (this.y >= floorY) return;
+
+    cancelAnimationFrame(this._glideRaf);
+    const startY = this.y;
+    const diff = floorY - startY;
+    const duration = 350;
+    const startTime = performance.now();
+
+    const step = (now) => {
+      if (this.isDragging) return;
+      const progress = Math.min(1, (now - startTime) / duration);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      this.y = startY + (diff * eased);
+      if (this.container) this.container.style.top = `${this.y}px`;
+      if (progress < 1) {
+        this._glideRaf = requestAnimationFrame(step);
+      } else {
+        this.y = floorY;
+        if (this.container) this.container.style.top = `${this.y}px`;
+      }
+    };
+    this._glideRaf = requestAnimationFrame(step);
+  }
+
   bindEvents() {
     // Drag & Drop
     this.container.addEventListener('pointerdown', (e) => {
       if (e.button !== 0) return; // Left click only
       this.isDragging = true;
+      try { this.container.setPointerCapture(e.pointerId); } catch (_) {}
+      cancelAnimationFrame(this._glideRaf);
       this.dragOffset.x = e.clientX - this.x;
       this.dragOffset.y = e.clientY - this.y;
       this.container.classList.add('dragging');
@@ -5629,24 +5724,41 @@ class PoyoriController {
 
     window.addEventListener('pointermove', (e) => {
       if (!this.isDragging) return;
-      this.x = Math.max(10, Math.min(window.innerWidth - this.sizePx - 10, e.clientX - this.dragOffset.x));
-      this.y = Math.max(10, Math.min(window.innerHeight - this.sizePx - 6, e.clientY - this.dragOffset.y));
+      const maxX = Math.max(10, window.innerWidth - this.sizePx - 10);
+      const maxY = Math.max(0, window.innerHeight - this.sizePx - 6);
+      this.x = Math.max(0, Math.min(maxX, e.clientX - this.dragOffset.x));
+      this.y = Math.max(0, Math.min(maxY, e.clientY - this.dragOffset.y));
       this.container.style.left = `${this.x}px`;
       this.container.style.top = `${this.y}px`;
     });
 
-    window.addEventListener('pointerup', () => {
+    const endDrag = (e) => {
       if (!this.isDragging) return;
       this.isDragging = false;
+      try { if (e && e.pointerId) this.container.releasePointerCapture(e.pointerId); } catch (_) {}
       this.container.classList.remove('dragging');
-      // Snap to bottom if released in bottom third
-      if (this.y > window.innerHeight * 0.65) {
-        this.y = window.innerHeight - this.sizePx - 6;
-      }
-      this.container.style.top = `${this.y}px`;
+      this.glideToFloor();
       this.state = this.petData.isSleeping ? 'sleep' : 'idle';
       this.updateSpriteGraphics();
-    });
+    };
+    window.addEventListener('pointerup', endDrag);
+    window.addEventListener('pointercancel', endDrag);
+    window.addEventListener('blur', () => { if (this.isDragging) endDrag(); });
+
+    // Smooth tab switching: synchronize state when returning to tab
+    if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          this.lastFrameTime = performance.now();
+          if (this.petData.isSleeping) {
+            this.state = 'sleep';
+          } else if (this.state === 'sleep' && !this.petData.isSleeping) {
+            this.state = 'idle';
+          }
+          this.updateSpriteGraphics();
+        }
+      });
+    }
 
     // Window resize adjustment with boundary guarantees for responsive and Arc split views
     window.addEventListener('resize', () => {
@@ -5773,6 +5885,11 @@ class PoyoriController {
 
 
 
+function escapeHtml(str) {
+  if (typeof str !== 'string') return '';
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
 class QuickBubble {
   constructor(shadowRoot, options = {}) {
     this.shadowRoot = shadowRoot;
@@ -5782,6 +5899,7 @@ class QuickBubble {
 
     this.container = null;
     this.isOpen = false;
+    this._nudgeTimer = null;
     this.initDOM();
   }
 
@@ -5822,25 +5940,26 @@ class QuickBubble {
 
     // Message with Grumpy neglect reaction and localization
     const mood = PoyoriEngine.getPetMood(state);
-    let moodMsg = `${pet.name} is cheerful! (ご機嫌)`;
-    if (mode === 'japanese') moodMsg = `${pet.name}はご機嫌です！`;
-    else if (mode === 'english') moodMsg = `${pet.name} is cheerful!`;
+    const safeName = escapeHtml(pet.name);
+    let moodMsg = `${safeName} is cheerful! (ご機嫌)`;
+    if (mode === 'japanese') moodMsg = `${safeName}はご機嫌です！`;
+    else if (mode === 'english') moodMsg = `${safeName} is cheerful!`;
 
     if (pet.isSleeping) {
-      moodMsg = mode === 'japanese' ? `${pet.name}はぐっすり眠っています… zzz` : `${pet.name} is sound asleep... zzz`;
+      moodMsg = mode === 'japanese' ? `${safeName}はぐっすり眠っています… zzz` : `${safeName} is sound asleep... zzz`;
     } else if (pet.isSick) {
-      moodMsg = mode === 'japanese' ? `${pet.name}は体調が悪そうです… 薬草を！` : `${pet.name} feels sick... needs medicine!`;
+      moodMsg = mode === 'japanese' ? `${safeName}は体調が悪そうです… 薬草を！` : `${safeName} feels sick... needs medicine!`;
     } else if (mood === 'grumpy') {
       moodMsg = mode === 'japanese' 
-        ? `ぷんぷん！${pet.name}は不機嫌です！構ってください！` 
-        : `Hmph! ${pet.name} is grumpy... give me snacks and attention!`;
+        ? `ぷんぷん！${safeName}は不機嫌です！構ってください！` 
+        : `Hmph! ${safeName} is grumpy... give me snacks and attention!`;
     } else if (pet.onaka < 30) {
-      moodMsg = mode === 'japanese' ? `${pet.name}はお腹が空いています！` : `${pet.name} is feeling hungry!`;
+      moodMsg = mode === 'japanese' ? `${safeName}はお腹が空いています！` : `${safeName} is feeling hungry!`;
     }
 
     this.container.innerHTML = `
       <div class="bubble-header">
-        <span class="bubble-title">${getPixelIconHtml('star', 12)} ${pet.name}</span>
+        <span class="bubble-title">${getPixelIconHtml('star', 12)} ${safeName}</span>
         <button class="bubble-close">${getPixelIconHtml('cross', 10)}</button>
       </div>
       <div class="bubble-msg">${moodMsg}</div>
@@ -5882,6 +6001,25 @@ class QuickBubble {
       this.close();
       this.onOpenDevice();
     });
+  }
+
+  showNudge(message, petX, petY) {
+    this.isOpen = true;
+    const bubbleX = Math.max(10, Math.min(window.innerWidth - 240, petX - 80));
+    const bubbleY = Math.max(10, petY - 110);
+    this.container.style.left = `${bubbleX}px`;
+    this.container.style.top = `${bubbleY}px`;
+    this.container.style.display = 'flex';
+    this.container.innerHTML = `
+      <div class="bubble-header">
+        <span class="bubble-title" style="color: #fedb72;">${getPixelIconHtml('spark', 12)} Focus Nudge</span>
+        <button class="bubble-close">${getPixelIconHtml('cross', 10)}</button>
+      </div>
+      <div class="bubble-msg" style="font-size: 8px; font-weight: bold; line-height: 1.4;">${escapeHtml(message)}</div>
+    `;
+    this.container.querySelector('.bubble-close').addEventListener('click', () => this.close());
+    clearTimeout(this._nudgeTimer);
+    this._nudgeTimer = setTimeout(() => this.close(), 4000);
   }
 
   close() {
@@ -5999,8 +6137,10 @@ class CelebrationModal {
 
     // Determine visual showcase HTML
     let showcaseHtml = '';
-    if (spriteUrl) {
-      showcaseHtml = `<img src="${spriteUrl}" alt="${subtitle}" class="celebrate-sprite" />`;
+    if (spriteUrl && typeof spriteUrl === 'string' && spriteUrl.trim().startsWith('<')) {
+      showcaseHtml = `<div class="celebrate-icon-wrap">${spriteUrl}</div>`;
+    } else if (spriteUrl) {
+      showcaseHtml = `<img src="${spriteUrl}" alt="${subtitle || 'Celebration'}" class="celebrate-sprite" />`;
     } else {
       showcaseHtml = `<div class="celebrate-icon-wrap">${getPixelIconHtml(iconKey, 48)}</div>`;
     }
@@ -6133,6 +6273,11 @@ class CelebrationModal {
 
 
 
+
+function escapeHtml(str) {
+  if (typeof str !== 'string') return '';
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
 
 class HandheldModal {
   constructor(shadowRoot, options = {}) {
@@ -6354,7 +6499,7 @@ class HandheldModal {
           <!-- Center/Right Creature Sprite & Name Display -->
           <div class="poyori-portrait-creature-center">
             <img class="poyori-screen-sprite ${isPocket ? 'pocket-sleeping' : ''}" id="status-pet-sprite" src="${spriteSvg}" alt="${creature.name}" style="cursor: pointer; width: ${(this.state.settings && this.state.settings.petSizePx) || 64}px; height: ${(this.state.settings && this.state.settings.petSizePx) || 64}px; ${isPocket ? 'opacity: 0.75; filter: drop-shadow(0 0 4px rgba(0,0,0,0.5));' : ''}" title="Click Poyori to toggle Pocket Mode (resting companion)!">
-            <div class="poyori-pet-name">${pet.name || creature.name} ${getPixelIconHtml(pet.gender === 'male' ? 'gender_male' : 'gender_female', 10)} <button class="poyori-rename-btn" id="rename-pet-btn" title="Rename Companion" style="background:none;border:none;cursor:pointer;font-size:8px;color:var(--screen-text,#0f380f);opacity:0.8;">[edit]</button> ${pet.isKomyo ? getPixelIconHtml('star', 12) : ''}</div>
+            <div class="poyori-pet-name">${escapeHtml(pet.name) || creature.name} ${getPixelIconHtml(pet.gender === 'male' ? 'gender_male' : 'gender_female', 10)} <button class="poyori-rename-btn" id="rename-pet-btn" title="Rename Companion" style="background:none;border:none;cursor:pointer;font-size:8px;color:var(--screen-text,#0f380f);opacity:0.8;">[edit]</button> ${pet.isKomyo ? getPixelIconHtml('star', 12) : ''}</div>
             <div class="poyori-creature-species">${creature.name} (${creature.jaName})</div>
           </div>
         </div>
@@ -6600,7 +6745,7 @@ class HandheldModal {
         <div class="poyori-subhead" style="margin-top: 10px;">${getPixelIconHtml('spark', 14)} Tamagotchi Display Size</div>
         <div class="size-preview-box">
           <div class="size-preview-stage">
-            <img class="size-preview-sprite" src="${getCreatureSprite(pet.creatureId, 'idle1', pet.accessory, pet.theme || 'classic_default')}" alt="${pet.name}" style="width: ${(this.state.settings && this.state.settings.petSizePx) || 64}px; height: ${(this.state.settings && this.state.settings.petSizePx) || 64}px;">
+            <img class="size-preview-sprite" src="${getCreatureSprite(pet.creatureId, 'idle1', pet.accessory, pet.theme || 'classic_default')}" alt="${escapeHtml(pet.name)}" style="width: ${(this.state.settings && this.state.settings.petSizePx) || 64}px; height: ${(this.state.settings && this.state.settings.petSizePx) || 64}px;">
           </div>
           <div class="poyori-size-grid">
             ${['small', 'normal', 'large', 'giant'].map(s => {
@@ -6625,10 +6770,10 @@ class HandheldModal {
             const cleanSpecies = cMeta.name || comp.creatureId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
             return `
               <div class="poyori-roster-item ${isAct ? 'active' : ''}">
-                <img class="roster-avatar" src="${thumbSprite}" alt="${comp.name}">
+                <img class="roster-avatar" src="${thumbSprite}" alt="${escapeHtml(comp.name)}">
                 <div class="roster-info">
                   <div class="roster-name-row">
-                    <span class="roster-name">${comp.name}</span>
+                    <span class="roster-name">${escapeHtml(comp.name)}</span>
                     <button class="roster-rename-btn" data-index="${idx}" title="Rename Companion">[rename]</button>
                   </div>
                   <div class="roster-sub-row">

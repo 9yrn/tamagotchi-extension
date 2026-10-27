@@ -1117,6 +1117,7 @@ export const DEFAULT_STATE = {
     petSize: 'normal', // 'small' (48px) | 'normal' (64px) | 'large' (80px) | 'giant' (96px)
     petSizePx: 64,
     petScale: 1.0,
+    fontSize: 'normal', // 'normal' (1.0x) | 'large' (1.2x) | 'huge' (1.35x)
     soundVolume: 0.5,
     soundMuted: false,
     silenceOnAudioTabs: true,

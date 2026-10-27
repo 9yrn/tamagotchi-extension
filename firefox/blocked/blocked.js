@@ -35,11 +35,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const returnBtn = document.getElementById('btn-return');
   if (returnBtn) {
     returnBtn.addEventListener('click', () => {
-      if (window.history.length > 1) {
-        window.history.back();
-      } else {
-        window.location.href = 'https://developer.mozilla.org';
-      }
+      // Safe navigation away from blocked target to avoid history back-redirect loops
+      window.location.replace('https://developer.mozilla.org');
     });
   }
 

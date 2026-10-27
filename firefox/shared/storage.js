@@ -17,6 +17,8 @@ function getStorageApi() {
   return null;
 }
 
+let pendingInitPromise = null;
+
 /**
  * Retrieves the current game state from storage.
  * If no state exists yet (e.g. on first launch), it initializes and returns the default state.
@@ -24,7 +26,11 @@ function getStorageApi() {
  * @returns {Promise<Object>} The latest Poyori game state.
  */
 export async function getState() {
-  return new Promise((resolve) => {
+  if (pendingInitPromise) {
+    return pendingInitPromise;
+  }
+
+  pendingInitPromise = new Promise((resolve) => {
     const api = getStorageApi();
     // Graceful fallback for non-extension environments (e.g., automated tests or standalone dev)
     if (!api) {
@@ -42,7 +48,7 @@ export async function getState() {
       if ((api.runtime && api.runtime.lastError) || !result || !result[STORAGE_KEY]) {
         // First-time setup: initialize and save default state
         const initial = JSON.parse(JSON.stringify(DEFAULT_STATE));
-        if (initial.pet) {
+        if (initial.pet && !initial.pet.gender) {
           initial.pet.gender = Math.random() < 0.5 ? 'male' : 'female';
         }
         api.storage.local.set({ [STORAGE_KEY]: initial }, () => {
@@ -57,7 +63,11 @@ export async function getState() {
         resolve(merged);
       }
     });
+  }).finally(() => {
+    pendingInitPromise = null;
   });
+
+  return pendingInitPromise;
 }
 
 /**
@@ -77,23 +87,8 @@ export async function saveState(state) {
       return;
     }
 
-    // Read latest storage to safely merge concurrent updates before persisting
-    api.storage.local.get([STORAGE_KEY], (res) => {
-      let toPersist = state;
-      if (res && res[STORAGE_KEY]) {
-        const remote = res[STORAGE_KEY];
-        if (remote.koban !== undefined && state.koban !== undefined) {
-          toPersist.koban = Math.max(state.koban, remote.koban);
-        }
-        if (remote.pet && state.pet) {
-          if (remote.pet.xp > state.pet.xp) toPersist.pet.xp = remote.pet.xp;
-          if (remote.pet.level > state.pet.level) toPersist.pet.level = remote.pet.level;
-          if (!toPersist.pet.gender && remote.pet.gender) toPersist.pet.gender = remote.pet.gender;
-        }
-      }
-      api.storage.local.set({ [STORAGE_KEY]: toPersist }, () => {
-        resolve(toPersist);
-      });
+    api.storage.local.set({ [STORAGE_KEY]: state }, () => {
+      resolve(state);
     });
   });
 }

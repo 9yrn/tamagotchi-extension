@@ -81,7 +81,14 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 });
 
 async function handleTabChange(tab) {
-  if (!tab || !tab.url || tab.url.startsWith('chrome://') || tab.url.includes('blocked/blocked.html')) return;
+  if (!tab || !tab.url || 
+      tab.url.startsWith('chrome:') || tab.url.startsWith('chrome-extension:') ||
+      tab.url.startsWith('about:') || tab.url.startsWith('moz-extension:') ||
+      tab.url.startsWith('edge:') || tab.url.startsWith('opera:') ||
+      tab.url.includes('blocked/blocked.html')) {
+    activeDomain = null;
+    return;
+  }
 
   const state = await getState();
   const flushed = flushBrowsingTime(state);
@@ -106,7 +113,7 @@ async function handleTabChange(tab) {
 }
 
 function flushBrowsingTime(state) {
-  if (!activeDomain) return false;
+  if (!activeDomain || !activeDomainStartTime) return false;
 
   const now = Date.now();
   const durationSecs = Math.floor((now - activeDomainStartTime) / 1000);
@@ -120,6 +127,16 @@ function flushBrowsingTime(state) {
     if (state.focusSession && state.focusSession.isActive) {
       const focusResult = PoyoriEngine.processFocusTick(state, activeDomain, durationSecs);
       state.focusSession.lastTickAt = now;
+      if (focusResult && focusResult.nudgeNeeded) {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+          if (tabs[0]?.id) {
+            chrome.tabs.sendMessage(tabs[0].id, {
+              action: 'focus_nudge',
+              message: focusResult.nudgeMessage
+            }).catch(() => {});
+          }
+        });
+      }
       // Ensure state mutations from processFocusTick are saved properly
       if (state.focusSession.remainingSeconds <= 0) {
         PoyoriEngine.completeFocusSession(state);
@@ -147,9 +164,13 @@ function flushBrowsingTime(state) {
 chrome.idle.onStateChanged.addListener(async (newState) => {
   const state = await getState();
   if (newState === 'idle' || newState === 'locked') {
+    flushBrowsingTime(state);
+    activeDomain = null;
+    activeDomainStartTime = null;
     state.pet.isSleeping = true;
     await saveState(state);
   } else if (newState === 'active') {
+    activeDomainStartTime = Date.now();
     // If not bedtime and not in pocket mode, wake pet up
     if (!state.settings?.pocketMode && !PoyoriEngine.isBedtime(state.settings.bedtimeStart, state.settings.bedtimeEnd)) {
       state.pet.isSleeping = false;

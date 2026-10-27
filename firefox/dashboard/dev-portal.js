@@ -8,7 +8,7 @@ import { getState, saveState } from '../shared/storage.js';
 import { CREATURES, STAGES, FOOD_ITEMS, ACCESSORIES, PALETTES, DEFAULT_STATE } from '../shared/constants.js';
 import { PoyoriEngine } from '../shared/game-engine.js';
 import { getCreatureSprite } from '../content/sprites.js';
-import { getPixelIconHtml } from '../shared/pixel-icons.js';
+import { getPixelIconHtml, getPixelIconUrl } from '../shared/pixel-icons.js';
 import { audioSynth } from '../ui/audio.js';
 import { CelebrationModal } from '../ui/celebration-modal.js';
 
@@ -30,7 +30,11 @@ async function initDevPortal() {
   const urlParams = new URLSearchParams(window.location.search);
   const isGestureAuth = urlParams.get('auth') === 'gesture' || window.location.hash === '#dev';
 
-  if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('poyori_dev_auth') !== 'true') {
+  if (isGestureAuth) {
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.setItem('poyori_dev_auth', 'true');
+    }
+  } else if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('poyori_dev_auth') !== 'true') {
     const enteredKey = prompt('POYORI DEV ACCESS PORT // ENTER SECRET KEY:');
     if (enteredKey && PoyoriEngine.verifyDevKey(enteredKey)) {
       sessionStorage.setItem('poyori_dev_auth', 'true');
@@ -340,7 +344,7 @@ function setupCelebrationTests() {
       subtitle: 'Omedetou! Rare Wardrobe Unlocked!',
       name: `${acc.name} (${acc.jaName})`,
       badgeText: 'SHOP TREASURE',
-      spriteUrl: getPixelIconHtml(acc.iconKey, 64),
+      spriteUrl: getPixelIconUrl(acc.iconKey),
       description: 'You saved 1,200 Koban to acquire this exquisite accessory! Wear it on your focus journeys.',
       cost: 1200,
       actionLabel: 'Equip Now!',

@@ -125,10 +125,21 @@ function setupNavigation() {
   });
 }
 
+function escapeHtml(str) {
+  if (typeof str !== 'string') return '';
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
+function applyFontSizeClass(fontSize) {
+  document.documentElement.classList.remove('font-size-normal', 'font-size-large', 'font-size-huge');
+  document.documentElement.classList.add(`font-size-${fontSize || 'normal'}`);
+}
+
 /**
  * Master render function that refreshes all dashboard sections
  */
 function renderAll() {
+  applyFontSizeClass(state.settings?.fontSize || 'normal');
   renderSidebar();
   renderOverview();
   renderBestiary();
@@ -197,7 +208,7 @@ function renderOverview() {
       return `
         <button class="companion-tab-btn ${isSel ? 'active' : ''}" data-index="${idx}">
           ${isAct ? '<span class="tab-dot" title="Active Roaming Companion"></span>' : ''}
-          <span>${comp.name || 'Companion'}</span>
+          <span>${escapeHtml(comp.name) || 'Companion'}</span>
           <span style="opacity: 0.7; font-size: 7px;">Lv. ${comp.level || 1}</span>
           ${isAct ? '<span style="color: var(--c-emerald); font-size: 7px;">[Active]</span>' : ''}
         </button>
@@ -236,7 +247,7 @@ function renderOverview() {
   const nameEl = document.getElementById('pet-display-name');
   if (nameEl) {
     const genderIcon = getPixelIconHtml(pet.gender === 'male' ? 'gender_male' : 'gender_female', 12);
-    nameEl.innerHTML = `${pet.name} ${genderIcon} ${pet.isKomyo ? getPixelIconHtml('star', 12) : ''}`;
+    nameEl.innerHTML = `${escapeHtml(pet.name)} ${genderIcon} ${pet.isKomyo ? getPixelIconHtml('star', 12) : ''}`;
   }
 
 
@@ -858,6 +869,23 @@ function renderWardrobe() {
     });
   }
 
+  // UI Font Size Row
+  const fontRow = document.getElementById('dash-font-size-row');
+  if (fontRow) {
+    const currentFontSize = state.settings?.fontSize || 'normal';
+    fontRow.querySelectorAll('.dash-font-size-btn').forEach(btn => {
+      const isAct = btn.dataset.fontSize === currentFontSize;
+      btn.classList.toggle('active', isAct);
+      btn.onclick = async () => {
+        PoyoriEngine.setFontSize(state, btn.dataset.fontSize);
+        audioSynth.boop();
+        await saveState(state);
+        applyFontSizeClass(state.settings?.fontSize || 'normal');
+        renderAll();
+      };
+    });
+  }
+
   // Companion Roster
   const rosterGrid = document.getElementById('dash-roster-grid');
   if (rosterGrid) {
@@ -868,9 +896,9 @@ function renderWardrobe() {
       const compSprite = getCreatureSprite(comp.creatureId, 'idle1', 'none', comp.theme || 'classic_default');
       return `
         <div class="wardrobe-card" style="position: relative; border-color: ${isAct ? 'var(--accent-cyan)' : 'inherit'};">
-          <img src="${compSprite}" alt="${comp.name}" style="width: 48px; height: 48px; image-rendering: pixelated; margin: 0 auto 6px auto; display: block;" />
+          <img src="${compSprite}" alt="${escapeHtml(comp.name)}" style="width: 48px; height: 48px; image-rendering: pixelated; margin: 0 auto 6px auto; display: block;" />
           <div style="display: flex; align-items: center; justify-content: center; gap: 4px;">
-            <strong style="font-size: 13px;">${comp.name}</strong>
+            <strong style="font-size: 13px;">${escapeHtml(comp.name)}</strong>
             <button class="dash-roster-rename-btn" data-index="${idx}" title="Rename Companion" style="background:none; border:none; cursor:pointer; font-size:10px; color:inherit; opacity:0.8;">[edit]</button>
           </div>
           <small>${cMeta.name} • Lv. ${comp.level || 1}</small>
@@ -926,8 +954,8 @@ function renderWebsites() {
   customEdu.forEach((e, idx) => {
     rows.push(`
       <div class="task-item-dash">
-        <span>${e.domain}</span>
-        <strong style="color: var(--accent-cyan);">${e.category.toUpperCase()} (Educational)</strong>
+        <span>${escapeHtml(e.domain)}</span>
+        <strong style="color: var(--accent-cyan);">${escapeHtml(e.category).toUpperCase()} (Educational)</strong>
         <button class="del-rule-btn" data-type="edu" data-idx="${idx}" style="background:none; border:none; cursor:pointer;">${getPixelIconHtml('cross', 10)}</button>
       </div>
     `);
@@ -936,7 +964,7 @@ function renderWebsites() {
   customDis.forEach((domain, idx) => {
     rows.push(`
       <div class="task-item-dash">
-        <span>${domain}</span>
+        <span>${escapeHtml(domain)}</span>
         <strong style="color: #ff7675;">DISTRACTING</strong>
         <button class="del-rule-btn" data-type="dis" data-idx="${idx}" style="background:none; border:none; cursor:pointer;">${getPixelIconHtml('cross', 10)}</button>
       </div>

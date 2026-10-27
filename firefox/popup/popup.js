@@ -12,6 +12,16 @@ import { audioSynth } from '../ui/audio.js';
 let state = null;
 let currentDomain = null;
 
+function escapeHtml(str) {
+  if (typeof str !== 'string') return '';
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
+function applyFontSizeClass(fontSize) {
+  document.documentElement.classList.remove('font-size-normal', 'font-size-large', 'font-size-huge');
+  document.documentElement.classList.add(`font-size-${fontSize || 'normal'}`);
+}
+
 async function initPopup() {
   state = await getState();
 
@@ -98,8 +108,10 @@ function renderPet() {
     spriteEl.title = 'Click Poyori to tuck into Pocket Mode (resting)!';
   }
 
+  applyFontSizeClass(state.settings?.fontSize || 'normal');
+
   const genderIcon = getPixelIconHtml(pet.gender === 'male' ? 'gender_male' : 'gender_female', 11);
-  document.getElementById('pet-name').innerHTML = `${pet.name} ${genderIcon} ${pet.isKomyo ? getPixelIconHtml('star', 12) : ''}`;
+  document.getElementById('pet-name').innerHTML = `${escapeHtml(pet.name)} ${genderIcon} ${pet.isKomyo ? getPixelIconHtml('star', 12) : ''}`;
   const lvlEl = document.getElementById('pet-level');
   if (lvlEl) lvlEl.textContent = `Lv. ${pet.level || 1}`;
 
@@ -111,9 +123,9 @@ function renderPet() {
       stageEl.textContent = `${creature.name} (${getTerm(stageMeta.termKey, mode)})`;
     }
   }
-  document.getElementById('val-onaka').textContent = pet.onaka;
-  document.getElementById('val-genki').textContent = pet.genki;
-  document.getElementById('val-kizuna').textContent = pet.kizuna;
+  document.getElementById('val-onaka').textContent = Math.round(pet.onaka);
+  document.getElementById('val-genki').textContent = Math.round(pet.genki);
+  document.getElementById('val-kizuna').textContent = Math.round(pet.kizuna);
   document.getElementById('streak-val').textContent = state.stats.currentStreak;
 
   // Cure illness button display
@@ -129,6 +141,15 @@ function renderPet() {
   if (sizeLabelEl) sizeLabelEl.textContent = sizeLabels[currentSize] || 'Normal (64px)';
   document.querySelectorAll('.popup-size-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.size === currentSize);
+  });
+
+  // UI Font Size Selector
+  const currentFontSize = state.settings?.fontSize || 'normal';
+  const fontLabels = { normal: 'Normal (1.0x)', large: 'Large (1.2x)', huge: 'Huge (1.35x)' };
+  const fontLabelEl = document.getElementById('font-size-label');
+  if (fontLabelEl) fontLabelEl.textContent = fontLabels[currentFontSize] || 'Normal (1.0x)';
+  document.querySelectorAll('.popup-font-size-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.fontSize === currentFontSize);
   });
 
   // Active Focus Session mini display
@@ -382,6 +403,18 @@ function bindEvents() {
           });
         });
       }
+    });
+  });
+
+  // Adjust UI Font Size
+  document.querySelectorAll('.popup-font-size-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const fSize = e.currentTarget.dataset.fontSize;
+      PoyoriEngine.setFontSize(state, fSize);
+      await saveState(state);
+      applyFontSizeClass(fSize);
+      renderPet();
+      showFeedback(`Font scaled to ${fSize.toUpperCase()}!`);
     });
   });
 

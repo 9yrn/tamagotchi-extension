@@ -13,6 +13,11 @@ import { getCreatureSprite } from '../content/sprites.js';
 import { getPixelIconHtml } from '../shared/pixel-icons.js';
 import { CelebrationModal } from './celebration-modal.js';
 
+function escapeHtml(str) {
+  if (typeof str !== 'string') return '';
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
 export class HandheldModal {
   constructor(shadowRoot, options = {}) {
     this.shadowRoot = shadowRoot;
@@ -233,7 +238,7 @@ export class HandheldModal {
           <!-- Center/Right Creature Sprite & Name Display -->
           <div class="poyori-portrait-creature-center">
             <img class="poyori-screen-sprite ${isPocket ? 'pocket-sleeping' : ''}" id="status-pet-sprite" src="${spriteSvg}" alt="${creature.name}" style="cursor: pointer; width: ${(this.state.settings && this.state.settings.petSizePx) || 64}px; height: ${(this.state.settings && this.state.settings.petSizePx) || 64}px; ${isPocket ? 'opacity: 0.75; filter: drop-shadow(0 0 4px rgba(0,0,0,0.5));' : ''}" title="Click Poyori to toggle Pocket Mode (resting companion)!">
-            <div class="poyori-pet-name">${pet.name || creature.name} ${getPixelIconHtml(pet.gender === 'male' ? 'gender_male' : 'gender_female', 10)} <button class="poyori-rename-btn" id="rename-pet-btn" title="Rename Companion" style="background:none;border:none;cursor:pointer;font-size:8px;color:var(--screen-text,#0f380f);opacity:0.8;">[edit]</button> ${pet.isKomyo ? getPixelIconHtml('star', 12) : ''}</div>
+            <div class="poyori-pet-name">${escapeHtml(pet.name) || creature.name} ${getPixelIconHtml(pet.gender === 'male' ? 'gender_male' : 'gender_female', 10)} <button class="poyori-rename-btn" id="rename-pet-btn" title="Rename Companion" style="background:none;border:none;cursor:pointer;font-size:8px;color:var(--screen-text,#0f380f);opacity:0.8;">[edit]</button> ${pet.isKomyo ? getPixelIconHtml('star', 12) : ''}</div>
             <div class="poyori-creature-species">${creature.name} (${creature.jaName})</div>
           </div>
         </div>
@@ -479,7 +484,7 @@ export class HandheldModal {
         <div class="poyori-subhead" style="margin-top: 10px;">${getPixelIconHtml('spark', 14)} Tamagotchi Display Size</div>
         <div class="size-preview-box">
           <div class="size-preview-stage">
-            <img class="size-preview-sprite" src="${getCreatureSprite(pet.creatureId, 'idle1', pet.accessory, pet.theme || 'classic_default')}" alt="${pet.name}" style="width: ${(this.state.settings && this.state.settings.petSizePx) || 64}px; height: ${(this.state.settings && this.state.settings.petSizePx) || 64}px;">
+            <img class="size-preview-sprite" src="${getCreatureSprite(pet.creatureId, 'idle1', pet.accessory, pet.theme || 'classic_default')}" alt="${escapeHtml(pet.name)}" style="width: ${(this.state.settings && this.state.settings.petSizePx) || 64}px; height: ${(this.state.settings && this.state.settings.petSizePx) || 64}px;">
           </div>
           <div class="poyori-size-grid">
             ${['small', 'normal', 'large', 'giant'].map(s => {
@@ -504,10 +509,10 @@ export class HandheldModal {
             const cleanSpecies = cMeta.name || comp.creatureId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
             return `
               <div class="poyori-roster-item ${isAct ? 'active' : ''}">
-                <img class="roster-avatar" src="${thumbSprite}" alt="${comp.name}">
+                <img class="roster-avatar" src="${thumbSprite}" alt="${escapeHtml(comp.name)}">
                 <div class="roster-info">
                   <div class="roster-name-row">
-                    <span class="roster-name">${comp.name}</span>
+                    <span class="roster-name">${escapeHtml(comp.name)}</span>
                     <button class="roster-rename-btn" data-index="${idx}" title="Rename Companion">[rename]</button>
                   </div>
                   <div class="roster-sub-row">

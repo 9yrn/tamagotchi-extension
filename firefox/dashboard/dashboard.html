@@ -353,12 +353,66 @@
 
         <!-- TAB 5: WEBSITE TRACKING -->
         <section id="tab-websites" class="tab-pane">
+          <!-- Card 1: Verified Built-in Monitored Presets -->
           <div class="dash-card">
-            <h3>Website Classification & Study Manager</h3>
-            <p class="section-desc">Configure which websites give experience to your pet and which count as distracting.</p>
+            <div class="preset-header-row">
+              <div>
+                <h3>Monitored Websites & Presets</h3>
+                <p class="section-desc">Websites visited while browsing automatically award discipline XP or trigger focus distraction nudges.</p>
+              </div>
+              <div class="domain-search-box">
+                <input type="text" id="domain-search-input" class="domain-search-input" placeholder="Search verified websites (e.g. github, wiki, arxiv)..." autocomplete="off">
+                <span id="domain-search-count" class="domain-search-count">111 sites</span>
+              </div>
+            </div>
+
+            <!-- Category Filter Tabs -->
+            <div class="domain-filter-tabs" id="domain-filter-tabs">
+              <button type="button" class="domain-tab-btn active" data-category="all">
+                <span>All Categories</span>
+                <span class="tab-count-badge" id="badge-count-all">111</span>
+              </button>
+              <button type="button" class="domain-tab-btn cat-denki" data-category="denki">
+                <span class="cat-dot dot-denki"></span>
+                <span>Denki (Coding)</span>
+                <span class="tab-count-badge" id="badge-count-denki">43</span>
+              </button>
+              <button type="button" class="domain-tab-btn cat-chishiki" data-category="chishiki">
+                <span class="cat-dot dot-chishiki"></span>
+                <span>Chishiki (Scholar)</span>
+                <span class="tab-count-badge" id="badge-count-chishiki">30</span>
+              </button>
+              <button type="button" class="domain-tab-btn cat-monogatari" data-category="monogatari">
+                <span class="cat-dot dot-monogatari"></span>
+                <span>Monogatari (Story)</span>
+                <span class="tab-count-badge" id="badge-count-monogatari">25</span>
+              </button>
+              <button type="button" class="domain-tab-btn cat-distracting" data-category="distracting">
+                <span class="cat-dot dot-distracting"></span>
+                <span>Distracting</span>
+                <span class="tab-count-badge" id="badge-count-distracting">13</span>
+              </button>
+            </div>
+
+            <!-- Category Description / Lore Info Box -->
+            <div id="domain-category-banner" class="domain-category-banner">
+              <strong id="domain-banner-title">All Categories</strong>
+              <span id="domain-banner-desc">Showing all 111 built-in curated websites. Click any website chip to prefill custom rules below.</span>
+            </div>
+
+            <!-- Website Chips Directory Grid -->
+            <div id="preset-badges-wrap" class="preset-badges-wrap preset-chips-container">
+              <!-- Populated dynamically with clean domain chips -->
+            </div>
+          </div>
+
+          <!-- Card 2: Custom Overrides & Rules -->
+          <div class="dash-card" style="margin-top: 20px;">
+            <h3>Custom Domain Rules & Overrides</h3>
+            <p class="section-desc">Create custom website rules to override default categories or add your personal study sites.</p>
             
             <div class="add-domain-row">
-              <input type="text" id="custom-domain-input" placeholder="e.g. docs.python.org or reddit.com">
+              <input type="text" id="custom-domain-input" placeholder="e.g. docs.rs or reddit.com">
               <select id="custom-domain-category">
                 <option value="denki">Denki (Coding & Tech)</option>
                 <option value="chishiki">Chishiki (Scholar & Science)</option>
@@ -369,14 +423,9 @@
             </div>
 
             <div class="domain-rules-tables">
-              <h4>Custom Overrides</h4>
+              <h4>Active Custom Overrides</h4>
               <div id="custom-rules-list" class="rules-table">
                 <!-- Populated dynamically -->
-              </div>
-
-              <h4 style="margin-top: 20px;">Default Built-in Presets</h4>
-              <div id="preset-badges-wrap" class="preset-badges-wrap">
-                <!-- Populated dynamically from DOMAIN_PRESETS -->
               </div>
             </div>
           </div>

@@ -1016,6 +1016,41 @@ function renderMarket() {
   });
 }
 
+let currentWebsiteCategory = 'all';
+let currentWebsiteSearch = '';
+
+const CATEGORY_META = {
+  all: {
+    title: 'All Disciplines & Presets (111 Verified Domains)',
+    desc: 'Showing all curated websites. Click any website chip to prefill custom rules below.',
+    color: '#fedb72'
+  },
+  denki: {
+    title: 'Denki Discipline (Coding & Tech)',
+    desc: 'Grants Denki discipline XP (+15 XP) to guide evolution toward Cyber Wyvern & Tech Cat lineages.',
+    color: '#45b7b8',
+    label: 'DENKI'
+  },
+  chishiki: {
+    title: 'Chishiki Discipline (Scholar & Science)',
+    desc: 'Grants Chishiki discipline XP (+15 XP) to guide evolution toward Sage Owl & Academic Fox lineages.',
+    color: '#2ecc71',
+    label: 'CHISHIKI'
+  },
+  monogatari: {
+    title: 'Monogatari Discipline (Story & Reading)',
+    desc: 'Grants Monogatari discipline XP (+15 XP) to guide evolution toward Mythic Kitsune & Storyteller lineages.',
+    color: '#a29bfe',
+    label: 'MONOGATARI'
+  },
+  distracting: {
+    title: 'Distracting Websites (Focus Drain)',
+    desc: 'Drains 10 Energy during active Focus Sessions and prompts Poyori to nudge you back on track.',
+    color: '#ff7675',
+    label: 'DISTRACT'
+  }
+};
+
 /**
  * Renders Website Tracking Manager
  */
@@ -1026,11 +1061,15 @@ function renderWebsites() {
 
   let rows = [];
   customEdu.forEach((e, idx) => {
+    const cat = e.category || 'denki';
+    const tagClass = `tag-${cat}`;
+    const label = (cat === 'chishiki' ? 'CHISHIKI' : cat === 'monogatari' ? 'MONOGATARI' : 'DENKI');
     rows.push(`
       <div class="task-item-dash">
+        <span class="chip-dot dot-${escapeHtml(cat)}" style="margin-right: 6px;"></span>
         <span>${escapeHtml(e.domain)}</span>
-        <strong style="color: var(--accent-cyan);">${escapeHtml(e.category).toUpperCase()} (Educational)</strong>
-        <button class="del-rule-btn" data-type="edu" data-idx="${idx}" style="background:none; border:none; cursor:pointer;">${getPixelIconHtml('cross', 10)}</button>
+        <span class="chip-tag ${tagClass}">${escapeHtml(label)}</span>
+        <button class="del-rule-btn" data-type="edu" data-idx="${idx}" title="Remove rule" style="background:none; border:none; cursor:pointer; margin-left: 8px;">${getPixelIconHtml('cross', 10)}</button>
       </div>
     `);
   });
@@ -1038,54 +1077,151 @@ function renderWebsites() {
   customDis.forEach((domain, idx) => {
     rows.push(`
       <div class="task-item-dash">
+        <span class="chip-dot dot-distracting" style="margin-right: 6px;"></span>
         <span>${escapeHtml(domain)}</span>
-        <strong style="color: #ff7675;">DISTRACTING</strong>
-        <button class="del-rule-btn" data-type="dis" data-idx="${idx}" style="background:none; border:none; cursor:pointer;">${getPixelIconHtml('cross', 10)}</button>
+        <span class="chip-tag tag-distracting">DISTRACTING</span>
+        <button class="del-rule-btn" data-type="dis" data-idx="${idx}" title="Remove rule" style="background:none; border:none; cursor:pointer; margin-left: 8px;">${getPixelIconHtml('cross', 10)}</button>
       </div>
     `);
   });
 
-  rulesList.innerHTML = rows.length ? rows.join('') : '<p class="section-desc">No custom domain rules added yet.</p>';
+  if (rulesList) {
+    rulesList.innerHTML = rows.length ? rows.join('') : '<p class="section-desc">No custom domain overrides active. Default presets are in effect.</p>';
 
-  rulesList.querySelectorAll('.del-rule-btn').forEach(btn => {
-    btn.onclick = async () => {
-      const type = btn.dataset.type;
-      const idx = Number(btn.dataset.idx);
-      if (type === 'edu') state.settings.customEducational.splice(idx, 1);
-      else state.settings.customDistracting.splice(idx, 1);
-      audioSynth.boop();
-      await saveState(state);
-      renderWebsites();
-    };
-  });
+    rulesList.querySelectorAll('.del-rule-btn').forEach(btn => {
+      btn.onclick = async () => {
+        const type = btn.dataset.type;
+        const idx = Number(btn.dataset.idx);
+        if (type === 'edu') state.settings.customEducational.splice(idx, 1);
+        else state.settings.customDistracting.splice(idx, 1);
+        audioSynth.boop();
+        await saveState(state);
+        renderWebsites();
+      };
+    });
+  }
 
-  // Render expanded built-in presets dynamically
+  renderPresetDomains();
+}
+
+/**
+ * Renders verified built-in domain preset chips with category filter and live search
+ */
+function renderPresetDomains() {
   const presetWrap = document.getElementById('preset-badges-wrap');
-  if (presetWrap && typeof DOMAIN_PRESETS !== 'undefined') {
-    const denkiList = (DOMAIN_PRESETS.educational?.denki || []).join(', ');
-    const chishikiList = (DOMAIN_PRESETS.educational?.chishiki || []).join(', ');
-    const monogatariList = (DOMAIN_PRESETS.educational?.monogatari || []).join(', ');
-    const distractingList = (DOMAIN_PRESETS.distracting || []).join(', ');
+  if (!presetWrap || typeof DOMAIN_PRESETS === 'undefined') return;
 
+  const denkiList = DOMAIN_PRESETS.educational?.denki || [];
+  const chishikiList = DOMAIN_PRESETS.educational?.chishiki || [];
+  const monogatariList = DOMAIN_PRESETS.educational?.monogatari || [];
+  const distractingList = DOMAIN_PRESETS.distracting || [];
+
+  // Update badge counts
+  const badgeAll = document.getElementById('badge-count-all');
+  const badgeDenki = document.getElementById('badge-count-denki');
+  const badgeChishiki = document.getElementById('badge-count-chishiki');
+  const badgeMonogatari = document.getElementById('badge-count-monogatari');
+  const badgeDistracting = document.getElementById('badge-count-distracting');
+
+  const total = denkiList.length + chishikiList.length + monogatariList.length + distractingList.length;
+  if (badgeAll) badgeAll.textContent = total;
+  if (badgeDenki) badgeDenki.textContent = denkiList.length;
+  if (badgeChishiki) badgeChishiki.textContent = chishikiList.length;
+  if (badgeMonogatari) badgeMonogatari.textContent = monogatariList.length;
+  if (badgeDistracting) badgeDistracting.textContent = distractingList.length;
+
+  // Build combined list based on active category
+  let list = [];
+  if (currentWebsiteCategory === 'all' || currentWebsiteCategory === 'denki') {
+    denkiList.forEach(d => list.push({ domain: d, category: 'denki', label: 'DENKI' }));
+  }
+  if (currentWebsiteCategory === 'all' || currentWebsiteCategory === 'chishiki') {
+    chishikiList.forEach(d => list.push({ domain: d, category: 'chishiki', label: 'CHISHIKI' }));
+  }
+  if (currentWebsiteCategory === 'all' || currentWebsiteCategory === 'monogatari') {
+    monogatariList.forEach(d => list.push({ domain: d, category: 'monogatari', label: 'MONOGATARI' }));
+  }
+  if (currentWebsiteCategory === 'all' || currentWebsiteCategory === 'distracting') {
+    distractingList.forEach(d => list.push({ domain: d, category: 'distracting', label: 'DISTRACT' }));
+  }
+
+  // Filter by search query
+  const query = currentWebsiteSearch.trim().toLowerCase();
+  if (query) {
+    list = list.filter(item => item.domain.toLowerCase().includes(query));
+  }
+
+  // Update count indicator
+  const countEl = document.getElementById('domain-search-count');
+  if (countEl) {
+    countEl.textContent = query ? `${list.length} of ${total} sites` : `${list.length} sites`;
+  }
+
+  // Update category banner
+  const banner = document.getElementById('domain-category-banner');
+  const bannerTitle = document.getElementById('domain-banner-title');
+  const bannerDesc = document.getElementById('domain-banner-desc');
+  const meta = CATEGORY_META[currentWebsiteCategory] || CATEGORY_META.all;
+  if (banner && meta) {
+    banner.style.borderLeftColor = meta.color;
+  }
+  if (bannerTitle && meta) {
+    bannerTitle.textContent = meta.title;
+    bannerTitle.style.color = meta.color;
+  }
+  if (bannerDesc && meta) {
+    bannerDesc.textContent = meta.desc;
+  }
+
+  // Render empty state or domain chips
+  if (list.length === 0) {
     presetWrap.innerHTML = `
-      <div class="preset-col">
-        <strong>Denki (Coding - ${DOMAIN_PRESETS.educational?.denki?.length || 0} Domains)</strong>
-        <p>${escapeHtml(denkiList)}</p>
-      </div>
-      <div class="preset-col">
-        <strong>Chishiki (Scholar - ${DOMAIN_PRESETS.educational?.chishiki?.length || 0} Domains)</strong>
-        <p>${escapeHtml(chishikiList)}</p>
-      </div>
-      <div class="preset-col">
-        <strong>Monogatari (Story - ${DOMAIN_PRESETS.educational?.monogatari?.length || 0} Domains)</strong>
-        <p>${escapeHtml(monogatariList)}</p>
-      </div>
-      <div class="preset-col">
-        <strong>Distracting (${DOMAIN_PRESETS.distracting?.length || 0} Domains)</strong>
-        <p>${escapeHtml(distractingList)}</p>
+      <div class="preset-empty-msg">
+        <span>No verified websites match "<strong>${escapeHtml(query)}</strong>"</span>
+        <button type="button" class="btn-prefill-custom" id="btn-prefill-search">Add "${escapeHtml(query)}" as custom rule</button>
       </div>
     `;
+    const prefillBtn = document.getElementById('btn-prefill-search');
+    if (prefillBtn) {
+      prefillBtn.onclick = () => {
+        const input = document.getElementById('custom-domain-input');
+        if (input) {
+          input.value = query;
+          input.focus();
+          audioSynth.chirp();
+        }
+      };
+    }
+    return;
   }
+
+  const chipsHtml = list.map(item => `
+    <div class="preset-domain-chip cat-${item.category}" data-domain="${escapeHtml(item.domain)}" data-category="${item.category}" title="Click to prefill custom override for ${escapeHtml(item.domain)}">
+      <span class="chip-dot dot-${item.category}"></span>
+      <span class="chip-name">${escapeHtml(item.domain)}</span>
+      <span class="chip-tag tag-${item.category}">${item.label}</span>
+    </div>
+  `).join('');
+
+  presetWrap.innerHTML = chipsHtml;
+
+  // Bind click-to-prefill on chips
+  presetWrap.querySelectorAll('.preset-domain-chip').forEach(chip => {
+    chip.onclick = () => {
+      const domain = chip.dataset.domain;
+      const cat = chip.dataset.category;
+      const input = document.getElementById('custom-domain-input');
+      const select = document.getElementById('custom-domain-category');
+      if (input) {
+        input.value = domain;
+        input.focus();
+      }
+      if (select) {
+        select.value = cat;
+      }
+      audioSynth.chirp();
+    };
+  });
 }
 
 function setupWebsiteActions() {
@@ -1093,26 +1229,60 @@ function setupWebsiteActions() {
   const domainInput = document.getElementById('custom-domain-input');
   const catSelect = document.getElementById('custom-domain-category');
 
-  addBtn.onclick = async () => {
-    const rawDomain = domainInput.value.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/\/.*$/, '');
-    if (!rawDomain) return;
-    const cat = catSelect.value;
+  if (addBtn) {
+    addBtn.onclick = async () => {
+      const rawDomain = (domainInput?.value || '').trim().toLowerCase().replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+      if (!rawDomain) return;
+      const cat = catSelect?.value || 'denki';
 
-    // Remove existing rule
-    state.settings.customEducational = (state.settings.customEducational || []).filter(e => e.domain !== rawDomain);
-    state.settings.customDistracting = (state.settings.customDistracting || []).filter(d => d !== rawDomain);
+      // Remove existing rule
+      state.settings.customEducational = (state.settings.customEducational || []).filter(e => e.domain !== rawDomain);
+      state.settings.customDistracting = (state.settings.customDistracting || []).filter(d => d !== rawDomain);
 
-    if (cat === 'distracting') {
-      state.settings.customDistracting.push(rawDomain);
-    } else {
-      state.settings.customEducational.push({ domain: rawDomain, category: cat });
-    }
+      if (cat === 'distracting') {
+        state.settings.customDistracting.push(rawDomain);
+      } else {
+        state.settings.customEducational.push({ domain: rawDomain, category: cat });
+      }
 
-    domainInput.value = '';
-    audioSynth.chirp();
-    await saveState(state);
-    renderWebsites();
-  };
+      if (domainInput) domainInput.value = '';
+      audioSynth.chirp();
+      await saveState(state);
+      renderWebsites();
+    };
+  }
+
+  if (domainInput) {
+    domainInput.onkeydown = (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addBtn?.click();
+      }
+    };
+  }
+
+  // Bind category filter tabs
+  const filterTabs = document.getElementById('domain-filter-tabs');
+  if (filterTabs) {
+    filterTabs.querySelectorAll('.domain-tab-btn').forEach(btn => {
+      btn.onclick = () => {
+        filterTabs.querySelectorAll('.domain-tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentWebsiteCategory = btn.dataset.category || 'all';
+        audioSynth.boop();
+        renderPresetDomains();
+      };
+    });
+  }
+
+  // Bind live search input
+  const searchInput = document.getElementById('domain-search-input');
+  if (searchInput) {
+    searchInput.oninput = (e) => {
+      currentWebsiteSearch = e.target.value;
+      renderPresetDomains();
+    };
+  }
 }
 
 /**

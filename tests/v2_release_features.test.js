@@ -197,6 +197,18 @@ test('V2 AUDIT: Dashboard HTML contains all required DOM element IDs for dashboa
     'pet-display-mode',
     'custom-rules-list',
     'preset-badges-wrap',
+    'domain-search-input',
+    'domain-search-count',
+    'domain-filter-tabs',
+    'domain-category-banner',
+    'badge-count-all',
+    'badge-count-denki',
+    'badge-count-chishiki',
+    'badge-count-monogatari',
+    'badge-count-distracting',
+    'custom-domain-input',
+    'custom-domain-category',
+    'add-domain-btn',
     'dash-rename-btn',
     'btn-pet-info',
     'btn-pet-flip-back',
@@ -239,4 +251,54 @@ test('V2 AUDIT: Popup HTML contains all required DOM element IDs for popup.js', 
     );
   }
 });
+
+test('V2 FEATURE: Website Tracking & Presets menu offers neat category filter tabs, search filter, and interactive chips', () => {
+  const dashHtml = fs.readFileSync(path.join(rootDir, 'dashboard', 'dashboard.html'), 'utf8');
+  const dashCss = fs.readFileSync(path.join(rootDir, 'dashboard', 'dashboard.css'), 'utf8');
+  const dashJs = fs.readFileSync(path.join(rootDir, 'dashboard', 'dashboard.js'), 'utf8');
+
+  // 1. Verify HTML Structure & Accessibility
+  assert.ok(dashHtml.includes('id="domain-search-input"'), 'Must have domain search input');
+  assert.ok(dashHtml.includes('id="domain-search-count"'), 'Must have domain count badge');
+  assert.ok(dashHtml.includes('id="domain-filter-tabs"'), 'Must have category filter tabs container');
+  assert.ok(dashHtml.includes('data-category="all"'), 'Must have "All Categories" filter tab');
+  assert.ok(dashHtml.includes('data-category="denki"'), 'Must have Denki filter tab');
+  assert.ok(dashHtml.includes('data-category="chishiki"'), 'Must have Chishiki filter tab');
+  assert.ok(dashHtml.includes('data-category="monogatari"'), 'Must have Monogatari filter tab');
+  assert.ok(dashHtml.includes('data-category="distracting"'), 'Must have Distracting filter tab');
+  assert.ok(dashHtml.includes('id="domain-category-banner"'), 'Must have category lore & effect banner');
+  assert.ok(dashHtml.includes('id="preset-badges-wrap"'), 'Must maintain preset-badges-wrap container');
+  assert.ok(dashHtml.includes('preset-chips-container'), 'Must have preset-chips-container class');
+
+  // 2. Verify CSS Styling & Retro Aesthetics
+  assert.ok(dashCss.includes('.preset-domain-chip'), 'CSS must define .preset-domain-chip');
+  assert.ok(dashCss.includes('.preset-chips-container'), 'CSS must define .preset-chips-container');
+  assert.ok(dashCss.includes('.domain-filter-tabs'), 'CSS must define .domain-filter-tabs');
+  assert.ok(dashCss.includes('.domain-tab-btn.active'), 'CSS must define active tab styling');
+  assert.ok(dashCss.includes('.domain-category-banner'), 'CSS must define lore banner');
+  assert.ok(dashCss.includes('.tag-denki'), 'CSS must style Denki tag');
+  assert.ok(dashCss.includes('.tag-chishiki'), 'CSS must style Chishiki tag');
+  assert.ok(dashCss.includes('.tag-monogatari'), 'CSS must style Monogatari tag');
+  assert.ok(dashCss.includes('.tag-distracting'), 'CSS must style Distracting tag');
+
+  // 3. Verify JavaScript Logic & Preset Counts
+  const totalPresets = (DOMAIN_PRESETS.educational?.denki?.length || 0) +
+                       (DOMAIN_PRESETS.educational?.chishiki?.length || 0) +
+                       (DOMAIN_PRESETS.educational?.monogatari?.length || 0) +
+                       (DOMAIN_PRESETS.distracting?.length || 0);
+  assert.strictEqual(totalPresets, 111, 'Curated domain presets must total exactly 111 domains');
+  assert.strictEqual(DOMAIN_PRESETS.educational?.denki?.length, 43, 'Denki preset must have 43 domains');
+  assert.strictEqual(DOMAIN_PRESETS.educational?.chishiki?.length, 30, 'Chishiki preset must have 30 domains');
+  assert.strictEqual(DOMAIN_PRESETS.educational?.monogatari?.length, 25, 'Monogatari preset must have 25 domains');
+  assert.strictEqual(DOMAIN_PRESETS.distracting?.length, 13, 'Distracting preset must have 13 domains');
+
+  // 4. Verify Interactive JS Handlers
+  assert.ok(dashJs.includes('renderPresetDomains()'), 'dashboard.js must define renderPresetDomains()');
+  assert.ok(dashJs.includes('currentWebsiteCategory'), 'dashboard.js must track active category filter');
+  assert.ok(dashJs.includes('currentWebsiteSearch'), 'dashboard.js must track search query');
+  assert.ok(dashJs.includes('.preset-domain-chip'), 'dashboard.js must generate individual domain chips');
+  assert.ok(dashJs.includes('preset-empty-msg'), 'dashboard.js must handle zero-result searches with add prompt');
+  assert.ok(dashJs.includes('chip.onclick'), 'dashboard.js must attach click listener to chips to prefill rules');
+});
+
 

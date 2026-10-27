@@ -135,3 +135,108 @@ test('V2 FEATURE: Dashboard & Popup UI text rephrasing and mode badges', () => {
   assert.ok(dashJs.includes('function renderMarket()'), 'dashboard.js must implement renderMarket()');
   assert.ok(dashJs.includes('renderMarket();'), 'dashboard.js must invoke renderMarket() in renderAll()');
 });
+
+test('V2 AUDIT: Zero syntax errors across all extension JS files (node -c validation)', async () => {
+  const { execSync } = await import('node:child_process');
+
+  const jsFiles = [
+    'background/background.js',
+    'blocked/blocked.js',
+    'content/content.js',
+    'content/pet-controller.js',
+    'content/sprites.js',
+    'dashboard/dashboard.js',
+    'dashboard/dev-portal.js',
+    'popup/popup.js',
+    'shared/constants.js',
+    'shared/game-engine.js',
+    'shared/pixel-icons.js',
+    'shared/storage.js',
+    'ui/audio.js',
+    'ui/celebration-modal.js',
+    'ui/handheld-modal.js',
+    'ui/quick-bubble.js',
+    'ui/tutorial-modal.js',
+    'scripts/build-bundle.js',
+    'scripts/build-firefox.js',
+    'scripts/package-release.js'
+  ];
+
+  for (const file of jsFiles) {
+    const fullPath = path.join(rootDir, file);
+    assert.ok(fs.existsSync(fullPath), `File ${file} must exist`);
+    try {
+      execSync(`node -c "${fullPath}"`);
+    } catch (e) {
+      assert.fail(`Syntax error detected in ${file}: ${e.message}`);
+    }
+  }
+});
+
+test('V2 AUDIT: Dashboard HTML contains all required DOM element IDs for dashboard.js', () => {
+  const dashHtml = fs.readFileSync(path.join(rootDir, 'dashboard', 'dashboard.html'), 'utf8');
+
+  const requiredIds = [
+    'market-items-grid',
+    'wardrobe-items-grid',
+    'palette-choices-row',
+    'dash-creature-themes-row',
+    'dash-pet-size-row',
+    'dash-font-size-row',
+    'dash-roster-grid',
+    'overview-pet-img',
+    'brand-sprite',
+    'btn-care-pet',
+    'btn-care-feed',
+    'btn-care-sleep',
+    'dash-focus-discipline',
+    'dash-start-focus-btn',
+    'sidebar-coins',
+    'sidebar-streak',
+    'sidebar-mode-label',
+    'pet-display-mode',
+    'custom-rules-list',
+    'preset-badges-wrap',
+    'dash-rename-btn',
+    'btn-pet-info',
+    'btn-pet-flip-back',
+    'companion-tabs-row',
+    'dash-roster-count'
+  ];
+
+  for (const id of requiredIds) {
+    assert.ok(
+      dashHtml.includes(`id="${id}"`) || dashHtml.includes(`id='${id}'`),
+      `dashboard.html must contain element with id="${id}"`
+    );
+  }
+});
+
+test('V2 AUDIT: Popup HTML contains all required DOM element IDs for popup.js', () => {
+  const popupHtml = fs.readFileSync(path.join(rootDir, 'popup', 'popup.html'), 'utf8');
+
+  const requiredPopupIds = [
+    'pet-sprite',
+    'pet-name',
+    'pet-level',
+    'popup-pet-mode',
+    'pet-stage',
+    'val-onaka',
+    'val-genki',
+    'val-kizuna',
+    'streak-val',
+    'quick-pet-btn',
+    'quick-feed-btn',
+    'quick-cure-btn',
+    'pet-size-label',
+    'font-size-label'
+  ];
+
+  for (const id of requiredPopupIds) {
+    assert.ok(
+      popupHtml.includes(`id="${id}"`) || popupHtml.includes(`id='${id}'`),
+      `popup.html must contain element with id="${id}"`
+    );
+  }
+});
+

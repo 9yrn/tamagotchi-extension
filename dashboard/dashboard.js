@@ -615,22 +615,6 @@ function setupOverviewActions() {
   if (overviewPetSprite) overviewPetSprite.onclick = handlePetInteraction;
   const brandPetSprite = document.getElementById('brand-sprite');
   if (brandPetSprite) brandPetSprite.onclick = handlePetInteraction;
-        badgeText: `STAGE ${evo.stage || 2} ・ ${evo.creature.branch.toUpperCase()}`,
-        spriteUrl: getCreatureSprite(evo.newId, 'idle1', state.pet.accessory),
-        description: evo.creature.desc || 'Your dedication and focused habits have guided Poyori to evolve!',
-        actionLabel: 'Name & Continue!',
-        enableNaming: true,
-        currentName: state.pet.name,
-        onAction: async (newName) => {
-          if (newName && newName.trim()) {
-            PoyoriEngine.setPetCustomName(state, newName.trim());
-            await saveState(state);
-            renderAll();
-          }
-        }
-      });
-    }
-  });
 
   document.getElementById('btn-care-sleep').addEventListener('click', async () => {
     state.pet.isSleeping = !state.pet.isSleeping;

@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poyori (ポヨリ) — Mochimori Dashboard & Preferences</title>
+  <link rel="icon" type="image/png" href="../assets/icons/icon32.png">
+  <link rel="stylesheet" href="dashboard.css">
+  <link rel="stylesheet" href="../ui/celebration-modal.css">
+  <link rel="stylesheet" href="../ui/tutorial-modal.css">
+  <link rel="stylesheet" href="dev-portal.css">
+</head>
+<body>
+  <div class="dash-layout">
+    <!-- Sidebar Navigation -->
+    <aside class="dash-sidebar">
+      <div class="dash-brand">
+        <div class="logo-wrap">
+          <img id="brand-sprite" src="" alt="Poyori" class="pixel-sprite">
+        </div>
+        <div class="brand-text">
+          <h1>POYORI</h1>
+          <span class="sub-kanji">もちもりポータル</span>
+        </div>
+      </div>
+
+      <nav class="dash-nav">
+        <button class="nav-btn active" data-tab="overview">
+          <span class="nav-icon" id="nav-icon-overview"></span>
+          <span class="nav-label">Pet Overview</span>
+        </button>
+        <button class="nav-btn" data-tab="bestiary">
+          <span class="nav-icon" id="nav-icon-bestiary"></span>
+          <span class="nav-label">Zukan / Evolution</span>
+        </button>
+        <button class="nav-btn" data-tab="tasks">
+          <span class="nav-icon" id="nav-icon-tasks"></span>
+          <span class="nav-label">Tasks & Trials</span>
+        </button>
+        <button class="nav-btn" data-tab="wardrobe">
+          <span class="nav-icon" id="nav-icon-wardrobe"></span>
+          <span class="nav-label">Wardrobe & Shop</span>
+        </button>
+        <button class="nav-btn" data-tab="websites">
+          <span class="nav-icon" id="nav-icon-websites"></span>
+          <span class="nav-label">Website Tracking</span>
+        </button>
+        <button class="nav-btn" data-tab="settings">
+          <span class="nav-icon" id="nav-icon-settings"></span>
+          <span class="nav-label">Preferences</span>
+        </button>
+        <button class="nav-btn dev-only" id="nav-btn-devport" data-tab="devport" style="display: none; border-left: 3px solid #00ff66; color: #00ff66;">
+          <span class="nav-icon" id="nav-icon-devport"></span>
+          <span class="nav-label">[DEV] God Mode Port</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="coin-badge">
+          <span id="sidebar-coin-label">Koban:</span>
+          <strong id="sidebar-coins">50</strong>
+        </div>
+        <div class="streak-badge">
+          <span id="sidebar-streak-label">Streak:</span>
+          <strong id="sidebar-streak">1 Days</strong>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="dash-main">
+      <header class="dash-topbar">
+        <div class="page-title-wrap">
+          <h2 id="page-heading">Pet Overview</h2>
+          <p id="page-subheading">Monitor your virtual companion's vitals, stage, and happiness.</p>
+        </div>
+        <div class="topbar-actions">
+          <button id="save-status-badge" class="badge-saved">● Synced</button>
+        </div>
+      </header>
+
+      <div class="dash-content-container">
+        <!-- TAB 1: OVERVIEW -->
+        <section id="tab-overview" class="tab-pane active">
+          <!-- Companion Carousel Navigation Bar -->
+          <div class="companion-carousel-shelf" id="companion-carousel-shelf">
+            <div class="carousel-shelf-header">
+              <span class="carousel-shelf-title">COMPANION ROSTER</span>
+              <span class="carousel-count" id="dash-roster-count">1 Companion</span>
+            </div>
+            <div class="companion-tabs-row" id="companion-tabs-row">
+              <!-- Dynamically populated companion tabs -->
+            </div>
+          </div>
+
+          <div class="overview-grid">
+            <!-- Creature Cards Section -->
+            <div class="overview-creature-area">
+              <!-- 3D Flippable Pet Card Container -->
+              <div class="pet-card-3d-wrap" id="pet-card-3d-wrap">
+                <div class="pet-card-3d-inner" id="pet-card-3d-inner">
+
+                  <!-- FRONT FACE: Pet Display & Care Actions -->
+                  <div class="pet-card-face pet-card-front dash-card pet-display-card">
+                    <div class="screen-frame" id="lcd-screen-preview">
+                      <div class="screen-header">
+                        <div class="pet-title-group">
+                          <span id="pet-display-name">Poyori</span>
+                          <button id="dash-rename-btn" title="Rename Companion" class="rename-inline-btn">[edit]</button>
+                          <span id="pet-display-level" class="branch-pill">Lv. 1</span>
+                          <span id="pet-display-branch" class="branch-pill">Denki</span>
+                        </div>
+                        <button id="btn-pet-info" class="pet-info-btn" title="View Vitals & Diagnostics (Flip Card)" aria-label="Pet Information">i</button>
+                      </div>
+                      <div class="screen-body">
+                        <img id="overview-pet-img" src="" alt="Pet" class="big-pixel-sprite">
+                        <div id="overview-stage-title" class="stage-pill">Stage 1: Tamago</div>
+                      </div>
+                      <div class="screen-footer">
+                        <span id="overview-mood-txt">Cheerful & Healthy</span>
+                      </div>
+                    </div>
+
+                    <div class="quick-care-actions">
+                      <button id="btn-care-cure" class="action-btn" style="display: none; background: #27ae60; color: #fff;"><span class="btn-p-icon" id="care-icon-cure"></span> Cure (薬草)</button>
+                      <button id="btn-care-feed" class="action-btn"><span class="btn-p-icon" id="care-icon-feed"></span> Feed</button>
+                      <button id="btn-care-pet" class="action-btn"><span class="btn-p-icon" id="care-icon-pet"></span> Pet</button>
+                      <button id="btn-care-sleep" class="action-btn"><span class="btn-p-icon" id="care-icon-sleep"></span> Sleep</button>
+                    </div>
+
+                    <div class="companion-status-indicator" id="companion-status-indicator">
+                      <span id="companion-active-badge" class="companion-active-badge">● Active Roaming Companion</span>
+                      <button id="btn-set-active-companion" class="btn-primary" style="display: none; width: 100%; margin-top: 8px;">Set as Roaming Companion</button>
+                    </div>
+                  </div>
+
+                  <!-- BACK FACE: Pet Vitals & Progression (Flipped View) -->
+                  <div class="pet-card-face pet-card-back dash-card vitals-detail-card">
+                    <div class="card-back-header">
+                      <div>
+                        <h3 id="back-vitals-title">Vitals & Progression</h3>
+                        <span class="back-subtitle" id="back-companion-subtitle">Status Diagnostics</span>
+                      </div>
+                      <button id="btn-pet-flip-back" class="pet-flip-back-btn" title="Back to Pet View">⤶ Back</button>
+                    </div>
+
+                    <div class="vitals-meters-container">
+                      <div class="vital-block">
+                        <div class="vital-label">
+                          <span><span id="vital-icon-onaka"></span> Onaka (Hunger / Satiety)</span>
+                          <span id="txt-onaka">80%</span>
+                        </div>
+                        <div class="meter-bar">
+                          <div id="meter-onaka" class="meter-fill fill-hunger" style="width: 80%;"></div>
+                        </div>
+                      </div>
+
+                      <div class="vital-block">
+                        <div class="vital-label">
+                          <span><span id="vital-icon-genki"></span> Genki (Energy / Stamina)</span>
+                          <span id="txt-genki">100%</span>
+                        </div>
+                        <div class="meter-bar">
+                          <div id="meter-genki" class="meter-fill fill-energy" style="width: 100%;"></div>
+                        </div>
+                      </div>
+
+                      <div class="vital-block">
+                        <div class="vital-label">
+                          <span><span id="vital-icon-kizuna"></span> Kizuna (Bond & Affection)</span>
+                          <span id="txt-kizuna">20%</span>
+                        </div>
+                        <div class="meter-bar">
+                          <div id="meter-kizuna" class="meter-fill fill-bond" style="width: 20%;"></div>
+                        </div>
+                      </div>
+
+                      <div class="vital-block">
+                        <div class="vital-label">
+                          <span><span id="vital-icon-xp"></span> Shinka Experience (XP)</span>
+                          <span id="txt-xp">0 / 100 XP</span>
+                        </div>
+                        <div class="meter-bar">
+                          <div id="meter-xp" class="meter-fill fill-xp" style="width: 0%;"></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="stat-meta-grid">
+                      <div class="stat-box">
+                        <span class="stat-num" id="stat-tasks-done">0</span>
+                        <span class="stat-name">Tasks Done</span>
+                      </div>
+                      <div class="stat-box">
+                        <span class="stat-num" id="stat-study-time">0m</span>
+                        <span class="stat-name">Study Time</span>
+                      </div>
+                      <div class="stat-box">
+                        <span class="stat-num" id="stat-distract-time">0m</span>
+                        <span class="stat-name">Distraction</span>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            <!-- Focus Session Accountability Card (Below Creature Cards) -->
+            <div class="dash-card focus-card">
+              <h3>Focus Session (Pomodoro Accountability)</h3>
+              <p class="section-desc">Commit to a focused study sprint. Poyori will track your browsing accountability and award substantial XP upon completion.</p>
+              <div class="focus-controls-row">
+                <select id="dash-focus-discipline" class="dash-select">
+                  <option value="coding">Denki / Coding (Cat)</option>
+                  <option value="creative">Geijutsu / Creative Arts (Bird)</option>
+                  <option value="literature">Bungaku / Literature (Fox)</option>
+                  <option value="research">Kenkyū / Research (Owl)</option>
+                  <option value="gaming">Yūgi / Gaming (Dragon)</option>
+                  <option value="personal">Shūshin / Personal Dev (Shiba)</option>
+                </select>
+                <select id="dash-focus-duration" class="dash-select">
+                  <option value="15">15 Minutes</option>
+                  <option value="25" selected>25 Minutes</option>
+                  <option value="45">45 Minutes</option>
+                  <option value="60">60 Minutes</option>
+                </select>
+                <button id="dash-start-focus-btn" class="btn-primary" style="padding: 8px 16px;">Start Focus</button>
+                <button id="dash-stop-focus-btn" class="btn-secondary" style="display: none; padding: 8px 16px; background: #c0392b; color: #fff;">Cancel Focus</button>
+                <div id="dash-focus-countdown" style="font-size: 18px; font-weight: bold; margin-left: 10px; display: none;">25:00</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- TAB 2: BESTIARY & EVOLUTION -->
+        <section id="tab-bestiary" class="tab-pane">
+          <div class="dash-card">
+            <h3>Mochimori Zukan (図鑑) — Evolution Almanac</h3>
+            <p class="section-desc">Study specific categories while browsing to branch your creature's growth. 7-day streaks unlock radiant Kōmyō (光明) forms!</p>
+            
+            <div class="branch-filter-row">
+              <button class="filter-chip active" data-branch="all">All Disciplines (36)</button>
+              <button class="filter-chip" data-branch="coding">Coding (Cat)</button>
+              <button class="filter-chip" data-branch="creative">Creative (Bird)</button>
+              <button class="filter-chip" data-branch="literature">Literature (Fox)</button>
+              <button class="filter-chip" data-branch="research">Research (Owl)</button>
+              <button class="filter-chip" data-branch="gaming">Gaming (Dragon)</button>
+              <button class="filter-chip" data-branch="personal">Personal (Shiba)</button>
+            </div>
+
+            <div id="bestiary-grid" class="bestiary-matrix">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 3: TASKS & QUESTS -->
+        <section id="tab-tasks" class="tab-pane">
+          <div class="tasks-layout">
+            <div class="dash-card">
+              <h3>To-Do List (Shiren Trials)</h3>
+              <p class="section-desc">Completing your own tasks awards food items and pixel coins for Poyori.</p>
+              
+              <div class="add-task-form">
+                <input type="text" id="dash-new-task-text" placeholder="Enter custom quest or task..." maxlength="60">
+                <span class="fixed-reward-pill">Reward: +10 Koban, +1 Apple</span>
+                <button id="dash-add-task-btn" class="btn-primary">+ Add Task</button>
+              </div>
+
+              <div id="dash-task-list" class="task-items-container">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <div class="dash-card">
+              <h3>Daily Quests</h3>
+              <p class="section-desc">Automated daily goals refreshed every 24 hours.</p>
+              <div id="dash-daily-quests-list" class="daily-quests-container">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 4: WARDROBE & SHOP -->
+        <section id="tab-wardrobe" class="tab-pane">
+          <div class="dash-card">
+            <h3>Kisekae (Wardrobe & Accessories)</h3>
+            <p class="section-desc">Spend your Koban (pixel coins) earned from tasks to dress up Poyori.</p>
+            <div id="wardrobe-items-grid" class="wardrobe-grid">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <div class="dash-card" style="margin-top: 20px;">
+            <h3>LCD Screen Themes & Palettes</h3>
+            <div id="palette-choices-row" class="palette-grid">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        
+          <div class="dash-card" style="margin-top: 20px;">
+            <h3>Mochimori Market (Provisions & Medicine)</h3>
+            <p class="section-desc">Stock up on favorite snacks and medicinal Yakusō herbs to keep your companion healthy.</p>
+            <div id="market-items-grid" class="wardrobe-grid">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <div class="dash-card" style="margin-top: 20px;">
+            <h3>Creature Color Theme Palettes</h3>
+            <p class="section-desc">Unlocked at higher evolution stages (Stage 4+ and 6).</p>
+            <div id="dash-creature-themes-row" class="palette-grid">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <div class="dash-card" style="margin-top: 20px;">
+            <h3>Tamagotchi Display Size</h3>
+            <p class="section-desc">Adjust the roaming scale of your virtual pet across webpages.</p>
+            <div id="dash-pet-size-row" class="palette-grid" style="display: flex; gap: 8px;">
+              <button class="dash-size-btn palette-card" data-size="small" style="flex: 1;">Small (48px)</button>
+              <button class="dash-size-btn palette-card" data-size="normal" style="flex: 1;">Normal (64px)</button>
+              <button class="dash-size-btn palette-card" data-size="large" style="flex: 1;">Large (80px)</button>
+              <button class="dash-size-btn palette-card" data-size="giant" style="flex: 1;">Giant (96px)</button>
+            </div>
+          </div>
+
+          <div class="dash-card" style="margin-top: 20px;">
+            <h3>Companion Roster & Swapping</h3>
+            <p class="section-desc">Switch between companions you have raised across different disciplines.</p>
+            <div id="dash-roster-grid" class="wardrobe-grid">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 5: WEBSITE TRACKING -->
+        <section id="tab-websites" class="tab-pane">
+          <div class="dash-card">
+            <h3>Website Classification & Study Manager</h3>
+            <p class="section-desc">Configure which websites give experience to your pet and which count as distracting.</p>
+            
+            <div class="add-domain-row">
+              <input type="text" id="custom-domain-input" placeholder="e.g. docs.python.org or reddit.com">
+              <select id="custom-domain-category">
+                <option value="denki">Denki (Coding & Tech)</option>
+                <option value="chishiki">Chishiki (Scholar & Science)</option>
+                <option value="monogatari">Monogatari (Language & Reading)</option>
+                <option value="distracting">Distracting (Drains Energy)</option>
+              </select>
+              <button id="add-domain-btn" class="btn-primary">+ Add Rule</button>
+            </div>
+
+            <div class="domain-rules-tables">
+              <h4>Custom Overrides</h4>
+              <div id="custom-rules-list" class="rules-table">
+                <!-- Populated dynamically -->
+              </div>
+
+              <h4 style="margin-top: 20px;">Default Built-in Presets</h4>
+              <div class="preset-badges-wrap">
+                <div class="preset-col">
+                  <strong>Denki (Coding)</strong>
+                  <p>github.com, stackoverflow.com, developer.mozilla.org, leetcode.com, dev.to</p>
+                </div>
+                <div class="preset-col">
+                  <strong>Chishiki (Scholar)</strong>
+                  <p>wikipedia.org, coursera.org, edx.org, khanacademy.org, arxiv.org</p>
+                </div>
+                <div class="preset-col">
+                  <strong>Monogatari (Story)</strong>
+                  <p>duolingo.com, medium.com, substack.com, goodreads.com</p>
+                </div>
+                <div class="preset-col">
+                  <strong>Distracting</strong>
+                  <p>youtube.com, reddit.com, twitter.com, x.com, tiktok.com, instagram.com</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 6: SETTINGS -->
+        <section id="tab-settings" class="tab-pane">
+          <div class="dash-card">
+            <h3>Preferences & Game Rules</h3>
+            <p class="section-desc">Customize your terminology, audio, and gameplay stakes.</p>
+            
+            <div class="settings-form-grid">
+              <div class="form-group">
+                <label for="opt-language">Language & Terminology Mode</label>
+                <select id="opt-language">
+                  <option value="bilingual">Bilingual (Romaji + English)</option>
+                  <option value="japanese">Japanese Only (日本語)</option>
+                  <option value="english">English Only</option>
+                </select>
+                <small>Choose how game terms (Mochimori, Kizuna, Shinka) are labeled.</small>
+              </div>
+
+              <div class="form-group">
+                <label for="opt-consequence">Consequence Mode</label>
+                <select id="opt-consequence">
+                  <option value="cozy">Cozy Mode (Gentle, pet never dies or runs away)</option>
+                  <option value="hardcore">Hardcore Mode (Pet can run away after 48h neglect)</option>
+                </select>
+                <small>In Hardcore mode, heavy distraction can also lead to the Gūtara Slacker branch.</small>
+              </div>
+
+              <div class="form-group">
+                <label for="opt-volume">8-Bit Synthesizer Volume</label>
+                <input type="range" id="opt-volume" min="0" max="1" step="0.1" value="0.4">
+                <small id="opt-volume-val">40% Volume</small>
+              </div>
+
+              <div class="form-group">
+                <label>Audio Mute Controls</label>
+                <div class="checkbox-row">
+                  <input type="checkbox" id="opt-mute">
+                  <label for="opt-mute">Mute all chiptune audio</label>
+                </div>
+                <div class="checkbox-row">
+                  <input type="checkbox" id="opt-silence-audible" checked>
+                  <label for="opt-silence-audible">Auto-silence when other tabs play sound</label>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Night Bedtime Hours</label>
+                <div class="time-range-row">
+                  <input type="time" id="opt-bedtime-start" value="22:30">
+                  <span>to</span>
+                  <input type="time" id="opt-bedtime-end" value="07:30">
+                </div>
+                <small>Pet sleeps peacefully and recovers stamina during these hours.</small>
+              </div>
+
+              <div class="form-group">
+                <label for="opt-distract-tolerance">Distraction Fatigue Threshold</label>
+                <select id="opt-distract-tolerance">
+                  <option value="10">10 Minutes</option>
+                  <option value="15" selected>15 Minutes</option>
+                  <option value="30">30 Minutes</option>
+                  <option value="60">60 Minutes</option>
+                </select>
+                <small>Continuous browsing on distracting sites before pet gets drowsy.</small>
+              </div>
+
+              <div class="form-group">
+                <label>NSFW Content Protection</label>
+                <div class="checkbox-row">
+                  <input type="checkbox" id="opt-nsfw-filter">
+                  <label for="opt-nsfw-filter">Block all adult and NSFW websites (redirects to gatekeeper page)</label>
+                </div>
+                <small>Protects focus and prevents access to known adult and explicit domains.</small>
+              </div>
+
+              <div class="form-group">
+                <label>Custom Blocked Websites</label>
+                <div class="custom-block-row" style="display:flex; gap:8px; margin-bottom:8px;">
+                  <input type="text" id="dash-blocked-input" placeholder="e.g. twitter.com..." style="flex:1; padding:6px 10px; border-radius:4px; border:1px solid #ced4da;">
+                  <button id="dash-add-blocked-btn" class="btn-primary" style="padding:6px 14px;">+ Block</button>
+                </div>
+                <div id="dash-blocked-list" class="blocked-tags-list" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
+                <small>Visiting these domains will redirect you to the silly gatekeeper decree page.</small>
+              </div>
+            </div>
+
+            <div class="tutorial-replay-zone" style="margin-top: 24px; padding-top: 20px; border-top: 2px dashed var(--c-wood-dark);">
+              <h4>Onboarding & Tutorial</h4>
+              <p class="section-desc" style="margin-bottom: 12px;">Need a refresher on care mechanics, focus sessions, or starter breeds?</p>
+              <button id="btn-replay-tutorial" class="btn-primary" style="background: var(--c-wood-mid); padding: 8px 16px;">Replay Onboarding Tutorial</button>
+            </div>
+
+            <div class="danger-zone">
+              <h4>Data Management</h4>
+              <button id="btn-export-data" class="btn-secondary">Export Save Data (JSON)</button>
+              <button id="btn-reset-data" class="btn-danger">Reset Pet to Fresh Egg</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 7: DEV ACCESS PORT (HIDDEN BY DEFAULT) -->
+        <section id="tab-devport" class="tab-pane">
+          <div class="dev-banner-top" style="background: rgba(0, 255, 102, 0.08); border: 1px solid #00ff66; padding: 12px 16px; border-radius: 6px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <strong style="color: #00ff66; font-family: 'PixelOperator8', monospace; font-size: 11px;">[DEV ACCESS PORT ACTIVE]</strong>
+              <p style="font-size: 12px; color: #94a3b8; margin-top: 4px;">God mode unlocked. Test all 24 creatures, unlimited Koban, vitals overrides, and celebrations.</p>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <a href="dev-portal.html" target="_blank" class="btn-primary" style="background: #1e3a8a; border-color: #3b82f6; font-size: 11px; padding: 6px 12px; text-decoration: none; color: #fff;">Open Standalone Portal &rarr;</a>
+              <button id="dash-lock-dev-btn" class="btn-secondary" style="font-size: 11px; padding: 6px 12px; color: #ff7675;">Lock Dev Port</button>
+            </div>
+          </div>
+
+          <div class="dev-grid">
+            <!-- God Mode Card -->
+            <div class="dev-card featured">
+              <h3 class="dev-card-title"><span class="dev-card-icon" id="dash-icon-god"></span> INSTANT GOD MODE</h3>
+              <p class="dev-card-desc">Grants 99,999 Koban, unlocks all 24 creatures in Zukan, unlocks all 5 accessories, maxes all foods to x99, maxes vitals, and advances streak to 7 days.</p>
+              <button id="dash-btn-godmode" class="dev-btn dev-btn-god">ACTIVATE ALL FEATURES (GOD MODE)</button>
+            </div>
+
+            <!-- Morpher Card -->
+            <div class="dev-card">
+              <h3 class="dev-card-title"><span class="dev-card-icon" id="dash-icon-morph"></span> 24-CREATURE MORPHER</h3>
+              <p class="dev-card-desc">Transform companion into ANY creature across all branches and stages.</p>
+              <div class="morpher-box">
+                <select id="dash-select-morph" class="dev-select"></select>
+                <button id="dash-btn-morph" class="dev-btn dev-btn-primary">Morph Companion Now</button>
+              </div>
+            </div>
+
+            <!-- Economy Card -->
+            <div class="dev-card">
+              <h3 class="dev-card-title"><span class="dev-card-icon" id="dash-icon-coins"></span> ECONOMY & COINS</h3>
+              <p class="dev-card-desc">Quickly adjust Koban balance for testing.</p>
+              <div class="dev-btn-row">
+                <button id="dash-btn-coin-1k" class="dev-btn dev-btn-warning">+1,000 Koban</button>
+                <button id="dash-btn-coin-10k" class="dev-btn dev-btn-warning">+10,000 Koban</button>
+                <button id="dash-btn-coin-99k" class="dev-btn dev-btn-warning">Set 99,999 Koban</button>
+                <button id="dash-btn-coin-0" class="dev-btn dev-btn-danger">Reset to 0 Koban</button>
+              </div>
+            </div>
+
+            <!-- Foods Card -->
+            <div class="dev-card">
+              <h3 class="dev-card-title"><span class="dev-card-icon" id="dash-icon-apple"></span> FOOD INVENTORY</h3>
+              <p class="dev-card-desc">Add unlimited snacks and traditional medicine.</p>
+              <div class="dev-btn-row">
+                <button id="dash-btn-food-all" class="dev-btn dev-btn-success">+50 All Food Items</button>
+                <button id="dash-btn-food-clear" class="dev-btn dev-btn-danger">Clear Inventory</button>
+              </div>
+            </div>
+
+            <!-- Vitals Card -->
+            <div class="dev-card">
+              <h3 class="dev-card-title"><span class="dev-card-icon" id="dash-icon-heart"></span> VITALS & MOOD</h3>
+              <p class="dev-card-desc">Test hunger, energy, sickness, and grumpy states.</p>
+              <div class="dev-btn-row">
+                <button id="dash-btn-vital-max" class="dev-btn dev-btn-success">Max Vitals (100%)</button>
+                <button id="dash-btn-vital-starve" class="dev-btn dev-btn-warning">Set Starving (0%)</button>
+                <button id="dash-btn-vital-exhaust" class="dev-btn dev-btn-warning">Set Exhausted (0%)</button>
+                <button id="dash-btn-vital-sick" class="dev-btn dev-btn-danger">Toggle Sick</button>
+              </div>
+            </div>
+
+            <!-- Time Machine Card -->
+            <div class="dev-card">
+              <h3 class="dev-card-title"><span class="dev-card-icon" id="dash-icon-streak"></span> TIME MACHINE</h3>
+              <p class="dev-card-desc">Advance days or simulate neglect.</p>
+              <div class="dev-btn-row">
+                <button id="dash-btn-time-1day" class="dev-btn dev-btn-success">+1 Day Streak</button>
+                <button id="dash-btn-time-7days" class="dev-btn dev-btn-success">+7 Days Streak</button>
+                <button id="dash-btn-time-neglect" class="dev-btn dev-btn-warning">Simulate 12h Neglect</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,376 @@
+/**
+ * Poyori (ポヨリ) — Extension Toolbar Popup Styles
+ * Features PixelOperator 8-bit typography and retro RPG UI styling.
+ */
+
+@font-face {
+  font-family: 'PixelOperator8';
+  src: url('../assets/fonts/PixelOperator8.ttf') format('truetype');
+  font-weight: normal;
+}
+@font-face {
+  font-family: 'PixelOperator';
+  src: url('../assets/fonts/PixelOperator.ttf') format('truetype');
+  font-weight: normal;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 290px;
+  max-width: 100%;
+  overflow-x: hidden;
+  background: #272d3d;
+  color: #f5e4c8;
+  font-family: 'PixelOperator', monospace, sans-serif;
+  user-select: none;
+}
+
+body {
+  border: 4px solid #24140e;
+}
+
+.popup-container {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px dashed #9c542a;
+  padding-bottom: 6px;
+}
+
+.brand {
+  font-family: 'PixelOperator8', monospace;
+  font-weight: bold;
+  font-size: 11px;
+  color: #fedb72;
+  letter-spacing: 1px;
+  text-shadow: 1px 1px 0 #24140e;
+}
+
+.streak-badge {
+  background: #d63d2f;
+  color: #fff;
+  font-family: 'PixelOperator8', monospace;
+  font-size: 8px;
+  padding: 3px 6px;
+  border: 1px solid #24140e;
+  border-radius: 4px;
+  box-shadow: 0 1px 0 #000;
+}
+
+/* Pet Card */
+.pet-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #1a1e29;
+  padding: 8px;
+  border-radius: 6px;
+  border: 2px solid #5a2e17;
+  box-shadow: inset 0 0 0 1px #d88344;
+}
+
+#pet-sprite {
+  width: 52px;
+  height: 52px;
+  image-rendering: pixelated;
+}
+
+.pet-info {
+  flex: 1;
+}
+
+.pet-name {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 10px;
+  color: #fedb72;
+}
+
+.pet-stage {
+  font-family: 'PixelOperator', monospace;
+  font-size: 12px;
+  color: #45b7b8;
+  margin-bottom: 4px;
+}
+
+.vitals-row {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+}
+
+/* Site Classification Card */
+/* Pet Display Size Card */
+.size-card {
+  background: #1c2230;
+  border: 2px solid #24140e;
+  border-radius: 4px;
+  padding: 8px 10px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 2px 0 rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.size-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'PixelOperator8', monospace;
+  font-size: 8px;
+  color: #fedb72;
+  text-shadow: 1px 1px 0 #24140e;
+}
+
+.size-label {
+  font-family: 'PixelOperator', monospace;
+  font-size: 11px;
+  color: #a1b0d0;
+  text-shadow: none;
+}
+
+.pet-size-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.popup-size-btn {
+  flex: 1;
+  background: #262e49;
+  color: #f5e4c8;
+  border: 2px solid #24140e;
+  border-radius: 4px;
+  padding: 6px 2px;
+  font-family: 'PixelOperator8', monospace;
+  font-size: 7.5px;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 2px 0 #000;
+  text-shadow: 1px 1px 0 #24140e;
+  transition: all 0.15s ease;
+  outline: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+.popup-size-btn:hover {
+  background: #333d5a;
+  color: #ffffff;
+  border-color: #556282;
+  transform: translateY(-1px);
+}
+
+.popup-size-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 #000;
+}
+
+.popup-size-btn.active {
+  background: #1c2738;
+  color: #fedb72;
+  border-color: #45b7b8;
+  box-shadow: 0 0 6px rgba(69, 183, 184, 0.5), inset 0 0 6px rgba(69, 183, 184, 0.3);
+  font-weight: bold;
+}
+
+.site-card {
+  background: #1a1e29;
+  padding: 8px;
+  border-radius: 6px;
+  border: 2px solid #5a2e17;
+}
+
+.site-title {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 8px;
+  color: #ddc29a;
+}
+
+.site-domain {
+  font-size: 13px;
+  font-weight: bold;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 2px 0;
+}
+
+.site-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'PixelOperator8', monospace;
+  font-size: 7px;
+  padding: 3px 6px;
+  border-radius: 3px;
+  background: #485460;
+  margin-bottom: 6px;
+  border: 1px solid #000;
+  transition: all 0.2s ease;
+}
+
+@keyframes tag-pop {
+  0% { transform: scale(0.92); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+.site-tag.pop {
+  animation: tag-pop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.site-tag.denki { background: #0984e3; color: #fff; box-shadow: 0 0 6px rgba(9, 132, 227, 0.6); }
+.site-tag.chishiki { background: #6c5ce7; color: #fff; box-shadow: 0 0 6px rgba(108, 92, 231, 0.6); }
+.site-tag.monogatari { background: #e84393; color: #fff; box-shadow: 0 0 6px rgba(232, 67, 147, 0.6); }
+.site-tag.distracting { background: #d63031; color: #fff; box-shadow: 0 0 6px rgba(214, 48, 49, 0.6); }
+
+.site-buttons {
+  display: flex;
+  gap: 5px;
+}
+
+.tag-btn {
+  flex: 1;
+  background: #353d52;
+  border: 1px solid #24140e;
+  border-bottom: 2px solid #1a1e29;
+  color: #f5e4c8;
+  font-family: 'PixelOperator8', monospace;
+  font-size: 7px;
+  padding: 5px 3px;
+  border-radius: 3px;
+  cursor: pointer;
+  box-shadow: 0 1px 0 #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: background 0.12s ease, transform 0.08s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+  outline: none;
+}
+
+.tag-btn:hover {
+  background: #4a5578;
+  border-color: #fedb72;
+  transform: translateY(-1px);
+}
+
+.tag-btn:active {
+  transform: translateY(1px);
+  border-bottom-width: 1px;
+  box-shadow: none;
+}
+
+/* Category-specific Active / Selected States */
+.tag-btn.active[data-cat="denki"] {
+  background: #0984e3 !important;
+  color: #ffffff !important;
+  border: 1px solid #74b9ff !important;
+  border-bottom: 2px solid #005691 !important;
+  box-shadow: 0 0 6px rgba(9, 132, 227, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+}
+
+.tag-btn.active[data-cat="chishiki"] {
+  background: #6c5ce7 !important;
+  color: #ffffff !important;
+  border: 1px solid #a29bfe !important;
+  border-bottom: 2px solid #4834d4 !important;
+  box-shadow: 0 0 6px rgba(108, 92, 231, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+}
+
+.tag-btn.active[data-cat="distracting"] {
+  background: #d63031 !important;
+  color: #ffffff !important;
+  border: 1px solid #ff7675 !important;
+  border-bottom: 2px solid #b71540 !important;
+  box-shadow: 0 0 6px rgba(214, 48, 49, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+}
+
+.site-feedback {
+  font-family: 'PixelOperator', monospace;
+  font-size: 11px;
+  color: #fedb72;
+  text-align: center;
+  min-height: 14px;
+  margin-top: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.site-feedback.show {
+  opacity: 1;
+}
+
+/* Actions Card */
+.actions-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.primary-btn {
+  background: #d88344;
+  color: #fff;
+  border: 2px solid #24140e;
+  border-radius: 4px;
+  padding: 7px;
+  font-family: 'PixelOperator8', monospace;
+  font-size: 8px;
+  cursor: pointer;
+  box-shadow: inset 0 2px 0 #f2ad6e, 0 3px 0 #000;
+  text-shadow: 1px 1px 0 #24140e;
+}
+
+.primary-btn:hover { background: #e89555; }
+.primary-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #000; }
+
+.dashboard-btn {
+  background: #0984e3;
+  color: #fff;
+  border: 2px solid #24140e;
+  border-radius: 4px;
+  padding: 7px;
+  font-family: 'PixelOperator8', monospace;
+  font-size: 8px;
+  cursor: pointer;
+  box-shadow: inset 0 2px 0 #74b9ff, 0 3px 0 #000;
+  text-shadow: 1px 1px 0 #24140e;
+}
+
+.dashboard-btn:hover { background: #0769b5; }
+.dashboard-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #000; }
+
+.action-row {
+  display: flex;
+  gap: 6px;
+}
+
+.sub-btn {
+  flex: 1;
+  background: #5cb85c;
+  color: #fff;
+  border: 2px solid #24140e;
+  border-radius: 4px;
+  padding: 6px;
+  font-family: 'PixelOperator8', monospace;
+  font-size: 8px;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), 0 2px 0 #000;
+  text-shadow: 1px 1px 0 #24140e;
+}
+
+.sub-btn:hover { background: #68cf68; }
+.sub-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 #000; }

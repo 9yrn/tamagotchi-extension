@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="128" height="128" shape-rendering="crispEdges">
+  <!-- Option 2: Retro Handheld Pocket Console (Chassis + LCD) -->
+  <!-- Keychain Loop -->
+  <rect x="2" y="0" width="3" height="1" fill="#636e72"/>
+  <rect x="1" y="1" width="1" height="2" fill="#636e72"/>
+  <rect x="4" y="1" width="1" height="1" fill="#636e72"/>
+
+  <!-- Outer Console Shell Outline -->
+  <rect x="5" y="1" width="7" height="1" fill="#2d3436"/>
+  <rect x="4" y="2" width="1" height="1" fill="#2d3436"/>
+  <rect x="12" y="2" width="1" height="1" fill="#2d3436"/>
+  <rect x="3" y="3" width="1" height="11" fill="#2d3436"/>
+  <rect x="13" y="3" width="1" height="11" fill="#2d3436"/>
+  <rect x="4" y="14" width="1" height="1" fill="#2d3436"/>
+  <rect x="12" y="14" width="1" height="1" fill="#2d3436"/>
+  <rect x="5" y="15" width="7" height="1" fill="#2d3436"/>
+
+  <!-- Console Chassis Body (Retro Lilac) -->
+  <rect x="5" y="2" width="7" height="1" fill="#a29bfe"/>
+  <rect x="4" y="3" width="9" height="11" fill="#6c5ce7"/>
+  <rect x="5" y="14" width="7" height="1" fill="#4834d4"/>
+
+  <!-- Screen Bezel (Dark) -->
+  <rect x="5" y="4" width="7" height="6" fill="#1e272e"/>
+
+  <!-- LCD Screen (Classic Mint Green) -->
+  <rect x="6" y="5" width="5" height="4" fill="#a8e6cf"/>
+
+  <!-- Pet Face on LCD Screen -->
+  <rect x="7" y="6" width="1" height="1" fill="#1e272e"/>
+  <rect x="9" y="6" width="1" height="1" fill="#1e272e"/>
+  <rect x="8" y="7" width="1" height="1" fill="#1e272e"/>
+
+  <!-- Handheld Console Physical Buttons -->
+  <!-- Button A (Cyan) -->
+  <rect x="5" y="11" width="2" height="2" fill="#00cec9"/>
+  <!-- Button B (Coral Red) -->
+  <rect x="8" y="12" width="2" height="2" fill="#ff7675"/>
+  <!-- Button C (Yellow) -->
+  <rect x="10" y="11" width="2" height="2" fill="#ffeaa7"/>
+</svg>

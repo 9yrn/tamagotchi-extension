@@ -1,0 +1,295 @@
+/**
+ * Poyori (ポヨリ) — Celebratory Reward & Evolution Modal Styles
+ * Pixel-art golden plaques, sunburst rays, glowing confetti sparkles,
+ * and high-contrast retro RPG typography.
+ */
+
+.poyori-celebrate-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 12, 18, 0.88);
+  backdrop-filter: blur(4px);
+  z-index: 2147483647;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto !important;
+  animation: celebrate-fade-in 0.2s ease-out;
+}
+
+@keyframes celebrate-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes celebrate-dialog-pop {
+  0% { transform: scale(0.85); opacity: 0; }
+  70% { transform: scale(1.04); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+.poyori-celebrate-dialog {
+  position: relative;
+  width: 320px;
+  max-width: 90vw;
+  background: linear-gradient(180deg, #1c2333 0%, #0e121a 100%);
+  border: 4px solid #fedb72;
+  border-radius: 8px;
+  box-shadow: 0 0 0 3px #24140e, 0 12px 36px rgba(0, 0, 0, 0.85), 0 0 25px rgba(254, 219, 114, 0.35);
+  padding: 22px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  font-family: 'PixelOperator', monospace;
+  color: #f5e4c8;
+  user-select: none;
+  pointer-events: auto !important;
+  animation: celebrate-dialog-pop 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Floating Sparkle Particles */
+.celebrate-sparkle {
+  position: absolute;
+  pointer-events: none;
+  animation: sparkle-float 1.8s infinite ease-in-out;
+}
+
+.celebrate-sparkle.sp-1 { top: -14px; left: 16px; animation-delay: 0s; }
+.celebrate-sparkle.sp-2 { top: 12px; right: 14px; animation-delay: 0.4s; }
+.celebrate-sparkle.sp-3 { bottom: 20px; left: 14px; animation-delay: 0.8s; }
+.celebrate-sparkle.sp-4 { bottom: -12px; right: 28px; animation-delay: 1.2s; }
+
+@keyframes sparkle-float {
+  0%, 100% { transform: translateY(0) scale(0.9); opacity: 0.7; }
+  50% { transform: translateY(-8px) scale(1.25); opacity: 1; filter: drop-shadow(0 0 4px #fedb72); }
+}
+
+/* Close button */
+.celebrate-close-btn {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #a4b0be;
+  font-family: 'PixelOperator8', monospace;
+  font-size: 14px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px 6px;
+  border-radius: 4px;
+}
+
+.celebrate-close-btn:hover {
+  color: #ff7675;
+  background: rgba(255, 118, 117, 0.15);
+}
+
+/* Badge Banner */
+.celebrate-badge-wrap {
+  margin-bottom: 8px;
+}
+
+.celebrate-badge {
+  display: inline-block;
+  background: #d63d2f;
+  color: #ffffff;
+  font-family: 'PixelOperator8', monospace;
+  font-size: 8px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid #fedb72;
+  box-shadow: 0 2px 0 #24140e, 0 0 10px rgba(214, 61, 47, 0.6);
+  letter-spacing: 0.5px;
+}
+
+/* Titles */
+.celebrate-title {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 12px;
+  color: #fedb72;
+  text-shadow: 1px 1px 0 #24140e;
+  margin: 0 0 4px;
+  line-height: 1.4;
+}
+
+.celebrate-subtitle {
+  font-family: 'PixelOperator', monospace;
+  font-size: 14px;
+  font-weight: bold;
+  color: #81ecec;
+  margin-bottom: 12px;
+}
+
+/* Spotlight Stage */
+.celebrate-stage {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  margin: 4px 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.celebrate-sunburst {
+  position: absolute;
+  inset: -15px;
+  background: radial-gradient(circle, rgba(254, 219, 114, 0.25) 0%, rgba(254, 219, 114, 0) 70%);
+  border-radius: 50%;
+  animation: sunburst-glow 2s infinite alternate ease-in-out;
+  pointer-events: none;
+}
+
+@keyframes sunburst-glow {
+  0% { transform: scale(0.9); opacity: 0.6; }
+  100% { transform: scale(1.15); opacity: 1; }
+}
+
+.celebrate-pedestal {
+  position: absolute;
+  bottom: 8px;
+  width: 64px;
+  height: 14px;
+  background: #24140e;
+  border: 2px solid #fedb72;
+  border-radius: 50%;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.6);
+}
+
+.celebrate-sprite {
+  width: 64px;
+  height: 64px;
+  image-rendering: pixelated;
+  z-index: 2;
+  animation: celebrate-sprite-bounce 0.8s infinite alternate ease-in-out;
+}
+
+.celebrate-icon-wrap {
+  z-index: 2;
+  animation: celebrate-sprite-bounce 0.8s infinite alternate ease-in-out;
+}
+
+@keyframes celebrate-sprite-bounce {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-8px); }
+}
+
+/* Meta Details Box */
+.celebrate-info-box {
+  width: 100%;
+  background: #151924;
+  border: 1px solid #353d52;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  box-sizing: border-box;
+}
+
+.celebrate-stage-tag {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 8px;
+  color: #ffeaa7;
+  margin-bottom: 4px;
+}
+
+.celebrate-branch-tag {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 8px;
+  color: #74b9ff;
+  margin-bottom: 6px;
+}
+
+.celebrate-cost-tag {
+  font-size: 12px;
+  color: #fedb72;
+  margin-bottom: 6px;
+}
+
+.celebrate-desc {
+  font-size: 11px;
+  color: #d1d8e0;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Actions */
+.celebrate-actions {
+  width: 100%;
+}
+
+.celebrate-action-btn {
+  width: 100%;
+  background: #d88344;
+  color: #ffffff;
+  border: 2px solid #24140e;
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-family: 'PixelOperator8', monospace;
+  font-size: 9px;
+  cursor: pointer;
+  box-shadow: inset 0 2px 0 #f2ad6e, 0 3px 0 #000;
+  text-shadow: 1px 1px 0 #24140e;
+  transition: all 0.1s ease;
+}
+
+.celebrate-action-btn:hover {
+  background: #e89555;
+  transform: translateY(-1px);
+}
+
+.celebrate-action-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #000;
+}
+
+/* Companion Naming Box */
+.celebrate-naming-box {
+  width: 100%;
+  background: #11141d;
+  border: 1px dashed #4b5563;
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-bottom: 12px;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+.celebrate-naming-label {
+  display: block;
+  font-family: 'PixelOperator8', monospace;
+  font-size: 8px;
+  color: #ffeaa7;
+  margin-bottom: 5px;
+}
+
+.celebrate-naming-input-row {
+  width: 100%;
+}
+
+.celebrate-name-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: #1e2433;
+  color: #f1f2f6;
+  border: 1px solid #4b5563;
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-family: 'PixelOperator', monospace, sans-serif;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.celebrate-name-input:focus {
+  border-color: #00f0ff;
+  box-shadow: 0 0 4px rgba(0, 240, 255, 0.4);
+}
+
+.celebrate-naming-hint {
+  font-size: 9px;
+  color: #9ca3af;
+  margin-top: 4px;
+}
+

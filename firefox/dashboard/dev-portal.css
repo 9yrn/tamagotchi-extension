@@ -1,0 +1,298 @@
+/**
+ * Poyori (ポヨリ) — Dev Access Port Stylesheet
+ * Retro 9-bit cyber CRT terminal theme with scanline effects,
+ * high-contrast phosphor green & amber accents, and responsive layout.
+ */
+
+:root {
+  --dev-bg: #0b0f19;
+  --dev-card-bg: #141c2e;
+  --dev-border: #1e293b;
+  --dev-green: #00ff66;
+  --dev-green-dim: rgba(0, 255, 102, 0.15);
+  --dev-amber: #ffb800;
+  --dev-amber-dim: rgba(255, 184, 0, 0.15);
+  --dev-cyan: #00e5ff;
+  --dev-magenta: #ff007f;
+  --dev-red: #ff3366;
+  --dev-text: #e2e8f0;
+  --dev-muted: #94a3b8;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--dev-bg);
+  color: var(--dev-text);
+  font-family: 'PixelOperator', monospace, -apple-system, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 24px;
+  min-height: 100vh;
+}
+
+/* Header & Cyber Plaque */
+.dev-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid var(--dev-green);
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 12px var(--dev-green-dim);
+}
+
+.dev-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dev-title {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 16px;
+  color: var(--dev-green);
+  letter-spacing: 1px;
+  text-shadow: 0 0 8px rgba(0, 255, 102, 0.6);
+}
+
+.dev-badge-active {
+  background: var(--dev-green-dim);
+  border: 1px solid var(--dev-green);
+  color: var(--dev-green);
+  font-size: 10px;
+  font-family: 'PixelOperator8', monospace;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.dev-exit-btn {
+  background: transparent;
+  border: 1px solid var(--dev-muted);
+  color: var(--dev-muted);
+  font-family: 'PixelOperator8', monospace;
+  font-size: 10px;
+  padding: 6px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.dev-exit-btn:hover {
+  border-color: var(--dev-red);
+  color: var(--dev-red);
+}
+
+/* Grid Layout */
+.dev-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 20px;
+}
+
+.dev-card {
+  background: var(--dev-card-bg);
+  border: 1px solid var(--dev-border);
+  border-radius: 6px;
+  padding: 18px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.dev-card.featured {
+  border-color: var(--dev-green);
+  box-shadow: 0 0 15px var(--dev-green-dim);
+}
+
+.dev-card-title {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 12px;
+  color: var(--dev-amber);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 8px;
+}
+
+.dev-card-desc {
+  font-size: 12px;
+  color: var(--dev-muted);
+  margin-bottom: 14px;
+}
+
+/* Button Controls */
+.dev-btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.dev-btn {
+  font-family: 'PixelOperator', monospace;
+  font-size: 13px;
+  font-weight: bold;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s;
+}
+
+.dev-btn-god {
+  background: var(--dev-green);
+  color: #0b0f19;
+  border-color: var(--dev-green);
+  font-family: 'PixelOperator8', monospace;
+  font-size: 11px;
+  padding: 12px 16px;
+  width: 100%;
+  justify-content: center;
+  box-shadow: 0 0 12px var(--dev-green);
+}
+
+.dev-btn-god:hover {
+  background: #33ff88;
+  transform: translateY(-1px);
+}
+
+.dev-btn-primary {
+  background: #1e3a8a;
+  color: #93c5fd;
+  border-color: #3b82f6;
+}
+
+.dev-btn-primary:hover {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.dev-btn-success {
+  background: rgba(0, 255, 102, 0.12);
+  color: var(--dev-green);
+  border-color: var(--dev-green);
+}
+
+.dev-btn-success:hover {
+  background: var(--dev-green);
+  color: #0b0f19;
+}
+
+.dev-btn-warning {
+  background: rgba(255, 184, 0, 0.12);
+  color: var(--dev-amber);
+  border-color: var(--dev-amber);
+}
+
+.dev-btn-warning:hover {
+  background: var(--dev-amber);
+  color: #0b0f19;
+}
+
+.dev-btn-danger {
+  background: rgba(255, 51, 102, 0.15);
+  color: var(--dev-red);
+  border-color: var(--dev-red);
+}
+
+.dev-btn-danger:hover {
+  background: var(--dev-red);
+  color: #ffffff;
+}
+
+/* Creature Morpher Box */
+.morpher-box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.morpher-preview {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px dashed var(--dev-cyan);
+  padding: 12px;
+  border-radius: 6px;
+}
+
+.morpher-sprite-frame {
+  width: 64px;
+  height: 64px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.morpher-sprite-img {
+  width: 56px;
+  height: 56px;
+  image-rendering: pixelated;
+}
+
+.morpher-details {
+  flex: 1;
+}
+
+.morpher-name {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 11px;
+  color: var(--dev-cyan);
+  margin-bottom: 4px;
+}
+
+.morpher-meta {
+  font-size: 11px;
+  color: var(--dev-muted);
+}
+
+.dev-select {
+  background: #0f172a;
+  border: 1px solid var(--dev-border);
+  color: var(--dev-text);
+  font-family: 'PixelOperator', monospace;
+  font-size: 13px;
+  padding: 8px 10px;
+  border-radius: 4px;
+  width: 100%;
+}
+
+.dev-select:focus {
+  border-color: var(--dev-cyan);
+  outline: none;
+}
+
+/* Live Terminal Log */
+.dev-log-box {
+  background: #050811;
+  border: 1px solid rgba(0, 255, 102, 0.3);
+  color: var(--dev-green);
+  font-family: monospace;
+  font-size: 12px;
+  padding: 10px;
+  border-radius: 4px;
+  max-height: 120px;
+  overflow-y: auto;
+  margin-top: 10px;
+}
+
+.dev-log-line {
+  margin-bottom: 2px;
+}
+
+.dev-log-line::before {
+  content: '>';
+  color: var(--dev-amber);
+  margin-right: 6px;
+}

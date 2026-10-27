@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poyori Focus Guard — Access Blocked</title>
+  <link rel="stylesheet" href="../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="blocked.css">
+</head>
+<body>
+  <div class="blocked-screen">
+    <div class="blocked-chassis">
+      <!-- Title Ribbon Banner -->
+      <div class="blocked-header">
+        <div class="blocked-led"></div>
+        <div class="blocked-banner">
+          <span class="banner-text">POYORI FOCUS GUARD・もちもり防衛隊</span>
+        </div>
+        <div class="blocked-led"></div>
+      </div>
+
+      <!-- Main Parchment Content Frame -->
+      <div class="blocked-parchment">
+        <!-- Guardian Pet Portrait -->
+        <div class="guardian-portrait">
+          <img id="guardian-sprite" src="" alt="Guardian Poyori">
+          <div class="guardian-name">Guardian Poyori (ポヨリ番人)</div>
+          <div class="guardian-badge">Focus Gatekeeper Level 99</div>
+        </div>
+
+        <!-- Target Domain Banner -->
+        <div class="blocked-target-row">
+          <span class="target-label">Forbidden Realm:</span>
+          <span class="target-domain" id="blocked-domain">example.com</span>
+        </div>
+
+        <!-- Silly Quote Dialogue Box -->
+        <div class="silly-dialogue-box">
+          <div class="dialogue-tag">📜 Gatekeeper Decree:</div>
+          <div class="dialogue-text" id="silly-quote">
+            "HOLD IT RIGHT THERE, SUMMONER! Poyori smelled slacking from a mile away! Back to your quest! 🍙⚡"
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="blocked-actions">
+          <button id="btn-return" class="rpg-btn btn-primary">⬅️ Return to Productivity</button>
+          <button id="btn-dashboard" class="rpg-btn btn-secondary">📜 Open Poyori Dashboard</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="blocked.js"></script>
+</body>
+</html>

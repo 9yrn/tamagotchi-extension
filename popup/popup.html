@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Poyori (ポヨリ)</title>
+  <link rel="icon" type="image/png" href="../assets/icons/icon32.png">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <div class="popup-header">
+      <div class="brand">POYORI・ポヨリ</div>
+      <div class="streak-badge"><span id="streak-icon"></span> <span id="streak-val">1</span>d</div>
+    </div>
+
+    <!-- Pet Mini Card -->
+    <div class="pet-card">
+      <img id="pet-sprite" src="" alt="Poyori">
+      <div class="pet-info">
+        <div class="pet-name"><span id="pet-name">Poyori</span> <button id="popup-rename-btn" title="Rename Companion" style="background:none;border:none;cursor:pointer;font-size:9px;opacity:0.75;padding:0 2px;">[edit]</button> <span class="pet-level-badge" id="pet-level" style="font-size: 10px; background: rgba(0,0,0,0.1); padding: 1px 4px; border-radius: 2px;">Lv. 1</span></div>
+        <div class="pet-stage" id="pet-stage">Tamago</div>
+        <div class="vitals-row">
+          <span><span id="icon-onaka"></span> <span id="val-onaka">80</span>%</span>
+          <span><span id="icon-genki"></span> <span id="val-genki">100</span>%</span>
+          <span><span id="icon-kizuna"></span> <span id="val-kizuna">20</span>%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pet Display Size Card -->
+    <div class="size-card">
+      <div class="size-header">
+        <span><span id="icon-size"></span> Companion Size:</span>
+        <span id="pet-size-label" class="size-label">Normal (64px)</span>
+      </div>
+      <div class="pet-size-buttons">
+        <button class="popup-size-btn" data-size="small">S (48px)</button>
+        <button class="popup-size-btn active" data-size="normal">M (64px)</button>
+        <button class="popup-size-btn" data-size="large">L (80px)</button>
+        <button class="popup-size-btn" data-size="giant">XL (96px)</button>
+      </div>
+    </div>
+
+    <!-- Active Focus Session Card -->
+    <div class="focus-mini-card" id="focus-mini-card" style="display: none; background: rgba(52, 152, 219, 0.1); border: 1px solid #3498db; border-radius: 4px; padding: 6px 10px; margin-bottom: 8px; text-align: center;">
+      <div style="font-size: 10px; font-weight: bold; color: #2980b9;">Focus: <span id="focus-discipline-name">Coding</span></div>
+      <div id="focus-timer-val" style="font-size: 16px; font-weight: bold; margin: 2px 0;">25:00</div>
+      <button id="popup-stop-focus-btn" style="background: none; border: 1px solid #e74c3c; color: #c0392b; font-size: 9px; padding: 2px 8px; border-radius: 3px; cursor: pointer; margin-top: 3px; font-family: inherit;">Stop Focus</button>
+    </div>
+
+    <!-- Active Tab Classification -->
+    <div class="site-card">
+      <div class="site-title">Current Website:</div>
+      <div class="site-domain" id="site-domain">Loading...</div>
+      <div class="site-tag" id="site-tag">Neutral</div>
+      <div class="site-buttons">
+        <button class="tag-btn" data-cat="denki"><span id="tag-icon-denki"></span> Coding</button>
+        <button class="tag-btn" data-cat="chishiki"><span id="tag-icon-chishiki"></span> Study</button>
+        <button class="tag-btn" data-cat="distracting"><span id="tag-icon-distract"></span> Distract</button>
+      </div>
+      <div class="site-feedback" id="site-feedback"></div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="actions-card">
+      <button id="quick-cure-btn" class="primary-btn" style="display: none; background: #27ae60; margin-bottom: 6px;"><span id="btn-icon-cure"></span> Cure Illness (薬草)</button>
+      <button id="open-device-btn" class="primary-btn"><span id="btn-icon-device"></span> Open In-Page Device</button>
+      <button id="open-dashboard-btn" class="dashboard-btn"><span id="btn-icon-dash"></span> Full Dashboard Portal</button>
+      <div class="action-row">
+        <button id="quick-feed-btn" class="sub-btn"><span id="btn-icon-feed"></span> Feed</button>
+        <button id="quick-pet-btn" class="sub-btn"><span id="btn-icon-pet"></span> Pet</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,387 @@
+/**
+ * Poyori (ポヨリ) — Roaming Pet Physics & Animation Controller
+ * Handles bottom-edge wandering, drag-and-drop, state animations, and emote bubbles.
+ */
+
+import { getCreatureSprite, getAccessorySvg } from './sprites.js';
+import { audioSynth } from '../ui/audio.js';
+import { getPixelIconHtml } from '../shared/pixel-icons.js';
+
+export class PoyoriController {
+  constructor(shadowRoot, options = {}) {
+    this.shadowRoot = shadowRoot;
+    this.options = options;
+
+    // Elements
+    this.container = null;
+    this.spriteEl = null;
+    this.accessoryEl = null;
+    this.emoteEl = null;
+    this.bubbleContainer = null;
+
+    // Pet Settings & Adjustable Size
+    this.settings = options.settings || {};
+    const presetSizes = { small: 48, normal: 64, large: 80, giant: 96 };
+    this.sizePx = (options.settings && (options.settings.petSizePx || presetSizes[options.settings.petSize])) || 64;
+
+    // Position & Physics
+    this.x = Math.max(50, window.innerWidth - 180);
+    this.y = window.innerHeight - this.sizePx - 6; // Bottom viewport edge
+    this.vx = 0.8;
+    this.direction = -1; // -1: left, 1: right
+    this.state = 'idle'; // 'idle' | 'walk' | 'sleep' | 'drag' | 'eat' | 'cheer'
+    
+    // Animation frame timing
+    this.frameIndex = 0;
+    this.lastFrameTime = 0;
+    this.stateTimer = 0;
+    this.isDragging = false;
+    this.dragOffset = { x: 0, y: 0 };
+
+    // Pet Data
+    this.petData = options.petData || {
+      creatureId: 'denki_tamago',
+      accessory: 'none',
+      isSleeping: false,
+      isSick: false
+    };
+
+    this.initDOM();
+    this.bindEvents();
+    this.startLoop();
+  }
+
+  initDOM() {
+    this.container = document.createElement('div');
+    this.container.className = 'poyori-pet-container';
+    if (this.container.style) {
+      if (typeof this.container.style.setProperty === 'function') {
+        this.container.style.setProperty('--pet-size', `${this.sizePx}px`);
+      } else {
+        this.container.style['--pet-size'] = `${this.sizePx}px`;
+      }
+      this.container.style.width = `${this.sizePx}px`;
+      this.container.style.height = `${this.sizePx}px`;
+      this.container.style.left = `${this.x}px`;
+      this.container.style.top = `${this.y}px`;
+    }
+
+    // Inner sprite wrapper
+    const spriteWrapper = document.createElement('div');
+    spriteWrapper.className = 'poyori-sprite-wrapper';
+
+    this.spriteEl = document.createElement('img');
+    this.spriteEl.className = 'poyori-sprite';
+    this.spriteEl.draggable = false;
+    this.spriteEl.alt = 'Poyori';
+
+    this.accessoryEl = document.createElement('img');
+    this.accessoryEl.className = 'poyori-accessory';
+    this.accessoryEl.draggable = false;
+
+    // Emote bubble
+    this.emoteEl = document.createElement('div');
+    this.emoteEl.className = 'poyori-emote-bubble';
+
+    spriteWrapper.appendChild(this.spriteEl);
+    spriteWrapper.appendChild(this.accessoryEl);
+    this.container.appendChild(this.emoteEl);
+    this.container.appendChild(spriteWrapper);
+
+    this.shadowRoot.appendChild(this.container);
+    if (this.settings && this.settings.petVisible === false) {
+      this.container.style.display = 'none';
+    }
+    this.updateSpriteGraphics();
+  }
+
+  updatePetData(newPetData, newSettings) {
+    this.petData = { ...this.petData, ...newPetData };
+    if (newSettings) {
+      this.settings = { ...this.settings, ...newSettings };
+      if (newSettings.petSizePx || newSettings.petSize) {
+        this.setPetSize(newSettings.petSizePx || newSettings.petSize);
+      }
+      if (newSettings.petVisible !== undefined) {
+        this.setVisibility(newSettings.petVisible);
+      }
+    }
+    if (this.petData.isSleeping) {
+      this.state = 'sleep';
+    } else if (this.state === 'sleep' && !this.petData.isSleeping) {
+      this.state = 'idle';
+    }
+    this.updateSpriteGraphics();
+  }
+
+  setVisibility(visible) {
+    if (this.container && this.container.style) {
+      this.container.style.display = visible ? 'flex' : 'none';
+    }
+  }
+
+  setPetSize(sizeKeyOrPx) {
+    let px = 64;
+    if (typeof sizeKeyOrPx === 'number') {
+      px = sizeKeyOrPx;
+    } else if (typeof sizeKeyOrPx === 'string') {
+      const sizes = { small: 48, normal: 64, large: 80, giant: 96 };
+      px = sizes[sizeKeyOrPx] || 64;
+    }
+    this.sizePx = px;
+    if (this.container && this.container.style) {
+      if (typeof this.container.style.setProperty === 'function') {
+        this.container.style.setProperty('--pet-size', `${this.sizePx}px`);
+      } else {
+        this.container.style['--pet-size'] = `${this.sizePx}px`;
+      }
+      this.container.style.width = `${this.sizePx}px`;
+      this.container.style.height = `${this.sizePx}px`;
+
+      if (this.spriteEl && this.spriteEl.style) {
+        this.spriteEl.style.width = `${this.sizePx}px`;
+        this.spriteEl.style.height = `${this.sizePx}px`;
+      }
+      if (this.accessoryEl && this.accessoryEl.style) {
+        this.accessoryEl.style.width = `${this.sizePx}px`;
+        this.accessoryEl.style.height = `${this.sizePx}px`;
+      }
+
+      // Keep within screen bounds and snap to floor if not being actively dragged
+      const winW = typeof window !== 'undefined' ? window.innerWidth : 800;
+      const winH = typeof window !== 'undefined' ? window.innerHeight : 600;
+      const maxX = Math.max(10, winW - this.sizePx - 16);
+      this.x = Math.max(10, Math.min(this.x, maxX));
+      this.container.style.left = `${this.x}px`;
+      const maxY = Math.max(10, winH - this.sizePx - 6);
+      if (!this.isDragging) {
+        this.y = maxY;
+        this.container.style.top = `${this.y}px`;
+      } else if (this.y > maxY) {
+        this.y = maxY;
+        this.container.style.top = `${this.y}px`;
+      }
+    }
+  }
+
+  updateSpriteGraphics() {
+    if (!this.spriteEl) return;
+    let action = (this.state === 'petted') ? 'petted'
+               : (this.state === 'walk') ? (this.frameIndex % 2 === 0 ? 'idle1' : 'idle2')
+               : (this.state === 'sleep') ? 'idle1'
+               : (this.state === 'eat') ? 'idle2'
+               : (this.frameIndex % 2 === 0 ? 'idle1' : 'idle2');
+
+    // Emotive SVG actions when roaming or idling
+    if (this.state === 'idle' || this.state === 'walk') {
+      if (this.petData.mood === 'hungry' || (this.petData.onaka !== undefined && this.petData.onaka < 30)) {
+        action = 'hungry';
+      } else if (this.isProcrastinating || this.petData.mood === 'procrastinating') {
+        action = 'procrastinating';
+      } else if (this.petData.mood === 'grumpy') {
+        action = 'grumpy';
+      }
+    }
+
+    const svgUri = getCreatureSprite(this.petData.creatureId, action, this.petData.accessory);
+    this.spriteEl.src = svgUri;
+
+    // Accessory overlay
+    if (this.petData.accessory && this.petData.accessory !== 'none') {
+      const accUri = getAccessorySvg(this.petData.accessory);
+      if (accUri) {
+        this.accessoryEl.src = accUri;
+        this.accessoryEl.style.display = 'block';
+      } else {
+        this.accessoryEl.style.display = 'none';
+      }
+    } else {
+      this.accessoryEl.style.display = 'none';
+    }
+
+    // Direction flip
+    this.spriteEl.style.transform = `scaleX(${this.direction})`;
+    if (this.accessoryEl) {
+      this.accessoryEl.style.transform = `scaleX(${this.direction})`;
+    }
+  }
+
+  /**
+   * Minimal, custom in-sprite reaction when petted:
+   * Creature squishes, springs up affectionately, blushes with happy squint eyes, and purrs!
+   * No emojis used.
+   */
+  triggerPetReaction() {
+    this.state = 'petted';
+    if (this.emoteEl) this.emoteEl.classList.remove('visible');
+    this.container.classList.add('petting-reaction');
+    this.updateSpriteGraphics();
+    audioSynth.purr();
+
+    clearTimeout(this._petTimeout);
+    this._petTimeout = setTimeout(() => {
+      this.container.classList.remove('petting-reaction');
+      this.state = this.petData.isSleeping ? 'sleep' : 'idle';
+      this.updateSpriteGraphics();
+    }, 1800);
+  }
+
+  showEmote(iconKeyOrEmoji, duration = 2500) {
+    if (!this.emoteEl) return;
+    this.emoteEl.innerHTML = getPixelIconHtml(iconKeyOrEmoji, 16);
+    this.emoteEl.classList.add('visible');
+    clearTimeout(this._emoteTimeout);
+    this._emoteTimeout = setTimeout(() => {
+      this.emoteEl.classList.remove('visible');
+    }, duration);
+  }
+
+  bindEvents() {
+    // Drag & Drop
+    this.container.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return; // Left click only
+      this.isDragging = true;
+      this.dragOffset.x = e.clientX - this.x;
+      this.dragOffset.y = e.clientY - this.y;
+      this.container.classList.add('dragging');
+      this.state = 'drag';
+      this.showEmote('paw', 1500);
+      audioSynth.boop();
+      e.stopPropagation();
+      e.preventDefault();
+    });
+
+    window.addEventListener('pointermove', (e) => {
+      if (!this.isDragging) return;
+      this.x = Math.max(10, Math.min(window.innerWidth - this.sizePx - 10, e.clientX - this.dragOffset.x));
+      this.y = Math.max(10, Math.min(window.innerHeight - this.sizePx - 6, e.clientY - this.dragOffset.y));
+      this.container.style.left = `${this.x}px`;
+      this.container.style.top = `${this.y}px`;
+    });
+
+    window.addEventListener('pointerup', () => {
+      if (!this.isDragging) return;
+      this.isDragging = false;
+      this.container.classList.remove('dragging');
+      // Snap to bottom if released in bottom third
+      if (this.y > window.innerHeight * 0.65) {
+        this.y = window.innerHeight - this.sizePx - 6;
+      }
+      this.container.style.top = `${this.y}px`;
+      this.state = this.petData.isSleeping ? 'sleep' : 'idle';
+      this.updateSpriteGraphics();
+    });
+
+    // Window resize adjustment with boundary guarantees for responsive and Arc split views
+    window.addEventListener('resize', () => {
+      const maxX = Math.max(10, window.innerWidth - this.sizePx - 16);
+      const maxY = Math.max(10, window.innerHeight - this.sizePx - 6);
+      this.x = Math.max(10, Math.min(this.x, maxX));
+      this.y = Math.max(10, Math.min(this.y, maxY));
+      this.container.style.left = `${this.x}px`;
+      this.container.style.top = `${this.y}px`;
+    });
+  }
+
+  triggerFeedAnimation() {
+    this.state = 'eat';
+    this.showEmote('heart_full', 2200);
+    this.updateSpriteGraphics();
+    setTimeout(() => {
+      this.state = this.petData.isSleeping ? 'sleep' : 'idle';
+      this.updateSpriteGraphics();
+    }, 2000);
+  }
+
+  triggerCheerAnimation() {
+    this.state = 'cheer';
+    this.showEmote('star', 2500);
+    this.container.classList.add('cheering');
+    setTimeout(() => {
+      this.container.classList.remove('cheering');
+      this.state = this.petData.isSleeping ? 'sleep' : 'idle';
+      this.updateSpriteGraphics();
+    }, 2500);
+  }
+
+  startLoop() {
+    const loop = (timestamp) => {
+      // 2 FPS animation step for retro 8-bit feel
+      if (timestamp - this.lastFrameTime > 450) {
+        this.lastFrameTime = timestamp;
+        this.frameIndex++;
+        this.stepBehavior();
+        this.updateSpriteGraphics();
+      }
+
+      // Smooth roaming physics
+      if (!this.isDragging && this.state === 'walk') {
+        this.x += this.vx * this.direction;
+        
+        // Boundaries
+        if (this.x <= 20) {
+          this.x = 20;
+          this.direction = 1;
+        } else if (this.x >= window.innerWidth - this.sizePx - 16) {
+          this.x = window.innerWidth - this.sizePx - 16;
+          this.direction = -1;
+        }
+        this.container.style.left = `${this.x}px`;
+      }
+
+      requestAnimationFrame(loop);
+    };
+
+    requestAnimationFrame(loop);
+  }
+
+  stepBehavior() {
+    if (this.isDragging || this.state === 'eat' || this.state === 'cheer') return;
+
+    if (this.petData.isSleeping) {
+      this.state = 'sleep';
+      if (this.frameIndex % 3 === 0) {
+        this.showEmote('sleep_zzz', 1800);
+      }
+      return;
+    }
+
+    if (this.petData.isSick) {
+      if (this.frameIndex % 4 === 0) {
+        this.showEmote('water_drop', 1800);
+      }
+    }
+
+    // Visibly emote when hungry, procrastinating, or grumpy
+    if (this.petData.mood === 'hungry' || (this.petData.onaka !== undefined && this.petData.onaka < 30)) {
+      if (this.frameIndex % 6 === 0) {
+        this.showEmote('apple', 2000);
+      }
+    } else if (this.isProcrastinating || this.petData.mood === 'procrastinating') {
+      if (this.frameIndex % 5 === 0) {
+        this.showEmote('sleep_zzz', 2000);
+      }
+    } else if (this.petData.mood === 'grumpy') {
+      if (this.frameIndex % 6 === 0) {
+        this.showEmote('sweat', 2000);
+      }
+    }
+
+    this.stateTimer++;
+
+    // Switch between walking and idling every few steps
+    if (this.state === 'idle' && this.stateTimer > 8) {
+      // 50% chance to start walking or turn around
+      if (Math.random() > 0.4) {
+        this.state = 'walk';
+        this.direction = Math.random() > 0.5 ? 1 : -1;
+        this.stateTimer = 0;
+      } else {
+        this.stateTimer = 0;
+      }
+    } else if (this.state === 'walk' && this.stateTimer > 12) {
+      this.state = 'idle';
+      this.stateTimer = 0;
+    }
+  }
+}

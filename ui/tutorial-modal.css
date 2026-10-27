@@ -1,0 +1,335 @@
+/**
+ * Poyori (ポヨリ) — Initial Setup Onboarding Tutorial Modal Styles
+ * Authentic 9-bit retro RPG Parchment / Dark Slate chassis with
+ * step navigation, starter egg picker, and glowing highlight states.
+ */
+
+.poyori-tutorial-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 14, 22, 0.9);
+  backdrop-filter: blur(6px);
+  z-index: 2147483646;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: tutorial-fade-in 0.25s ease-out;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+@keyframes tutorial-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes tutorial-dialog-pop {
+  0% { transform: scale(0.92); opacity: 0; }
+  70% { transform: scale(1.02); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+.poyori-tutorial-dialog {
+  position: relative;
+  width: 580px;
+  max-width: 95vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: linear-gradient(180deg, #1e2638 0%, #111622 100%);
+  border: 4px solid var(--c-wood-light, #d88344);
+  border-radius: 8px;
+  box-shadow: 0 0 0 3px #24140e, 0 16px 40px rgba(0, 0, 0, 0.85), 0 0 24px rgba(216, 131, 68, 0.3);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  font-family: 'PixelOperator', monospace;
+  color: var(--c-parchment, #f5e4c8);
+  box-sizing: border-box;
+  animation: tutorial-dialog-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Header Bar & Skip Button */
+.tutorial-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px dashed var(--c-wood-dark, #5a2e17);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.tutorial-step-badge {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 9px;
+  color: var(--c-gold-hilite, #fedb72);
+  letter-spacing: 0.5px;
+}
+
+.tutorial-skip-top-btn {
+  background: var(--c-slate-inner, #1a1e29);
+  border: 2px solid var(--c-dark-rim, #24140e);
+  color: var(--c-parchment-dark, #ddc29a);
+  font-family: 'PixelOperator8', monospace;
+  font-size: 8px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tutorial-skip-top-btn:hover {
+  background: var(--c-ruby, #d63d2f);
+  color: #fff;
+  border-color: #fff;
+  transform: translateY(-1px);
+}
+
+/* Slide Content */
+.tutorial-slide-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex: 1;
+}
+
+.tutorial-title {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 14px;
+  color: var(--c-gold-hilite, #fedb72);
+  text-shadow: 2px 2px 0 var(--c-dark-rim, #24140e);
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+}
+
+.tutorial-subtitle {
+  font-family: 'PixelOperator', monospace;
+  font-size: 13px;
+  color: var(--c-cyan, #45b7b8);
+  margin-bottom: 18px;
+}
+
+.tutorial-hero-art {
+  width: 96px;
+  height: 96px;
+  background: #0f131c;
+  border: 3px solid var(--c-wood-mid, #9c542a);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px auto;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.8), 0 4px 0 rgba(0, 0, 0, 0.4);
+}
+
+.tutorial-hero-art img {
+  width: 72px;
+  height: 72px;
+  image-rendering: pixelated;
+}
+
+.tutorial-text-desc {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--c-parchment, #f5e4c8);
+  max-width: 480px;
+  margin-bottom: 16px;
+}
+
+/* Feature Highlights Grid in Slides */
+.tutorial-features-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+  margin: 12px 0 18px 0;
+  text-align: left;
+}
+
+.tutorial-feature-card {
+  background: var(--c-slate-inner, #1a1e29);
+  border: 2px solid var(--c-dark-rim, #24140e);
+  border-radius: 6px;
+  padding: 10px 12px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 2px 0 rgba(0, 0, 0, 0.3);
+}
+
+.tutorial-feature-title {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 9px;
+  color: var(--c-gold, #f3a83b);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.tutorial-feature-desc {
+  font-size: 12px;
+  color: var(--c-parchment-dark, #ddc29a);
+  line-height: 1.35;
+}
+
+/* Starter Breed Selector (Step 2) */
+.tutorial-breed-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.tutorial-breed-card {
+  background: var(--c-slate-inner, #1a1e29);
+  border: 2px solid var(--c-dark-rim, #24140e);
+  border-radius: 6px;
+  padding: 10px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
+  transition: all 0.15s ease;
+}
+
+.tutorial-breed-card:hover {
+  background: #272f42;
+  border-color: var(--c-wood-light, #d88344);
+  transform: translateY(-2px);
+}
+
+.tutorial-breed-card.selected {
+  background: #1c2738;
+  border-color: var(--c-cyan, #45b7b8) !important;
+  box-shadow: 0 0 12px rgba(69, 183, 184, 0.5), inset 0 0 6px rgba(69, 183, 184, 0.3) !important;
+}
+
+.tutorial-breed-sprite {
+  width: 48px;
+  height: 48px;
+  image-rendering: pixelated;
+  margin-bottom: 6px;
+}
+
+.tutorial-breed-name {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 8px;
+  color: var(--c-gold-hilite, #fedb72);
+  margin-bottom: 2px;
+  text-align: center;
+}
+
+.tutorial-breed-branch {
+  font-size: 11px;
+  color: var(--c-parchment-dark, #ddc29a);
+  text-align: center;
+}
+
+/* Naming Input Box */
+.tutorial-naming-box {
+  width: 100%;
+  background: var(--c-slate-inner, #1a1e29);
+  border: 2px solid var(--c-dark-rim, #24140e);
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 16px;
+  box-sizing: border-box;
+}
+
+.tutorial-naming-label {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 9px;
+  color: var(--c-gold-hilite, #fedb72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.tutorial-name-input {
+  width: 240px;
+  background: #0f131c;
+  border: 2px solid var(--c-gold, #f3a83b);
+  border-radius: 4px;
+  color: #fff;
+  font-family: 'PixelOperator8', monospace;
+  font-size: 11px;
+  padding: 8px 12px;
+  text-align: center;
+  outline: none;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.tutorial-name-input:focus {
+  border-color: var(--c-cyan, #45b7b8);
+  box-shadow: 0 0 8px rgba(69, 183, 184, 0.6);
+}
+
+/* Navigation Footer */
+.tutorial-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 2px dashed var(--c-wood-dark, #5a2e17);
+  padding-top: 14px;
+  margin-top: 8px;
+}
+
+.tutorial-skip-btn {
+  background: transparent;
+  border: none;
+  color: var(--c-parchment-dark, #ddc29a);
+  font-family: 'PixelOperator8', monospace;
+  font-size: 8px;
+  cursor: pointer;
+  padding: 6px 10px;
+  opacity: 0.8;
+  transition: opacity 0.15s ease;
+}
+
+.tutorial-skip-btn:hover {
+  opacity: 1;
+  color: var(--c-ruby, #d63d2f);
+}
+
+.tutorial-nav-btns {
+  display: flex;
+  gap: 8px;
+}
+
+.tutorial-prev-btn {
+  background: var(--c-slate-inner, #1a1e29);
+  border: 2px solid var(--c-dark-rim, #24140e);
+  color: var(--c-parchment, #f5e4c8);
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-family: 'PixelOperator8', monospace;
+  font-size: 8px;
+  cursor: pointer;
+  box-shadow: 0 2px 0 #000;
+  transition: all 0.1s ease;
+}
+
+.tutorial-prev-btn:hover {
+  background: var(--c-wood-mid, #9c542a);
+  color: #fff;
+}
+
+.tutorial-next-btn {
+  background: var(--c-ruby, #d63d2f);
+  color: #fff;
+  border: 2px solid var(--c-dark-rim, #24140e);
+  padding: 8px 18px;
+  border-radius: 4px;
+  font-family: 'PixelOperator8', monospace;
+  font-size: 9px;
+  cursor: pointer;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.3), inset 0 -2px 0 rgba(0, 0, 0, 0.3), 0 3px 0 #000;
+  transition: transform 0.05s ease;
+}
+
+.tutorial-next-btn:active {
+  transform: translateY(2px);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.3), 0 1px 0 #000;
+}

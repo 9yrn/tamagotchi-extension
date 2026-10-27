@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poyori In-Page Web Companion Test Page</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.6;
+      max-width: 860px;
+      margin: 40px auto;
+      padding: 0 20px 140px 20px;
+      background: #f8f9fa;
+      color: #212529;
+    }
+    header {
+      border-bottom: 2px solid #dee2e6;
+      padding-bottom: 20px;
+      margin-bottom: 30px;
+    }
+    h1 { color: #2d3436; }
+    .hero-box {
+      background: #e9ecef;
+      padding: 24px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+    }
+    .feature-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 20px;
+    }
+    .feature-card {
+      background: #fff;
+      border: 1px solid #ced4da;
+      border-radius: 6px;
+      padding: 16px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🌐 Poyori Webpage Integration Test Page</h1>
+    <p>This test page simulates an active browsing session. Poyori roams along the bottom edge below!</p>
+  </header>
+
+  <main>
+    <div class="hero-box">
+      <h2>Welcome to Mochimori (もちもり)</h2>
+      <p>Look at the bottom of the viewport: Poyori is wandering back and forth!</p>
+      <ul>
+        <li><strong>Click Poyori</strong> to open the quick action bubble (Feed 🍎, Pet ✋, or Launch Handheld Device 📟).</li>
+        <li><strong>Drag Poyori</strong> with your mouse to pick them up and place them anywhere on your screen.</li>
+        <li><strong>Check bottom-right badge</strong> to classify this website as Coding, Academic, Reading, or Distracting.</li>
+      </ul>
+    </div>
+
+    <div class="feature-list">
+      <div class="feature-card">
+        <h3>⚡ Coding Study</h3>
+        <p>Visiting developer sites like GitHub and MDN awards Denki experience and evolves cyber creatures.</p>
+      </div>
+      <div class="feature-card">
+        <h3>📚 Academic Study</h3>
+        <p>Reading Wikipedia or science portals awards Chishiki experience and evolves scholar creatures.</p>
+      </div>
+      <div class="feature-card">
+        <h3>📖 Story & Language</h3>
+        <p>Language learning on Duolingo or reading articles evolves Monogatari kitsune and dragon forms.</p>
+      </div>
+      <div class="feature-card">
+        <h3>✨ 7-Day Streaks</h3>
+        <p>Maintaining daily focus streaks unlocks radiant Kōmyō (光明) golden forms with floating runes!</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Poyori Content Script Bundle -->
+  <script src="content/content.bundle.js"></script>
+</body>
+</html>

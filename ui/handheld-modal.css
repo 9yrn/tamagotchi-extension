@@ -1,0 +1,1606 @@
+/**
+ * Poyori (ポヨリ) — Handheld Device Modal Stylesheet
+ * Authentic 9-bit Retro RPG Dialogue & Console UI inspired by Image 2
+ * PixelOperator typography, beveled pixel borders, high-contrast palette rendering,
+ * and zero ABC hardware buttons.
+ */
+
+.poyori-device-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 14, 22, 0.72);
+  backdrop-filter: blur(4px);
+  z-index: 2147483646;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'PixelOperator', monospace, sans-serif;
+  box-sizing: border-box;
+  pointer-events: auto !important;
+}
+
+/* ==========================================================================
+   9-Bit Retro Console / RPG Chassis
+   Beveled chocolate & amber-wood pixel frame inspired by Image 2
+   ========================================================================== */
+.poyori-device-shell {
+  width: 380px;
+  max-width: 95vw;
+  height: 560px;
+  max-height: 92vh;
+  background: #7a3c1c;
+  pointer-events: auto !important;
+  /* Double beveled pixel border */
+  border: 4px solid #24140e;
+  border-radius: 6px;
+  box-shadow: 
+    inset 3px 3px 0 #d88344,
+    inset -3px -3px 0 #4a210f,
+    inset 6px 6px 0 #b35925,
+    inset -6px -6px 0 #311508,
+    0 16px 48px rgba(0, 0, 0, 0.75);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-sizing: border-box;
+  animation: poyoriPop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes poyoriPop {
+  0% { transform: scale(0.9); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Header with Title Ribbon Banner & LED */
+.poyori-device-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 0 4px;
+  gap: 8px;
+}
+
+/* Pulsing pixel power indicator gem */
+.poyori-power-led {
+  width: 10px;
+  height: 10px;
+  background: #55efc4;
+  border: 2px solid #24140e;
+  border-radius: 2px;
+  box-shadow: 0 0 6px #00b894, inset 1px 1px 0 #ffffff;
+  animation: ledPulse 1.8s infinite ease-in-out alternate;
+  flex-shrink: 0;
+}
+
+@keyframes ledPulse {
+  0% { opacity: 0.6; box-shadow: 0 0 2px #00b894; }
+  100% { opacity: 1; box-shadow: 0 0 8px #55efc4, 0 0 12px #00cec9; }
+}
+
+/* RPG Title Ribbon banner like in Image 2 */
+.poyori-title-banner {
+  flex: 1;
+  background: #3e1f13;
+  border: 2px solid #24140e;
+  border-radius: 4px;
+  padding: 4px 10px;
+  box-shadow: inset 1px 1px 0 #fedb72, inset -1px -1px 0 #1a0c06, 0 2px 0 rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.banner-text {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 10px;
+  font-weight: bold;
+  color: #fedb72;
+  letter-spacing: 1px;
+  text-shadow: 1px 1px 0 #180b06;
+}
+
+.poyori-close-btn {
+  background: #8e2b24;
+  color: #ffffff;
+  border: 2px solid #24140e;
+  width: 24px;
+  height: 24px;
+  border-radius: 3px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 1px 1px 0 #ea695f, inset -1px -1px 0 #4a1310, 0 2px 0 #000000;
+  transition: transform 0.05s;
+  flex-shrink: 0;
+}
+
+.poyori-close-btn:hover {
+  background: #b83329;
+}
+
+.poyori-close-btn:active {
+  transform: translateY(1px);
+  box-shadow: inset 1px 1px 0 #ea695f, 0 1px 0 #000000;
+}
+
+/* ==========================================================================
+   Screen Bezel & RPG Inventory Tab Bar
+   ========================================================================== */
+.poyori-screen-bezel {
+  flex: 1;
+  background: #24140e;
+  border-radius: 6px;
+  padding: 8px;
+  border: 3px solid #140b07;
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.85);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  gap: 8px;
+}
+
+/* Tabs Bar styled like RPG inventory slots */
+.poyori-tabs-bar {
+  display: flex;
+  justify-content: space-between;
+  background: #140b07;
+  border-radius: 4px;
+  padding: 3px;
+  border: 2px solid #361c10;
+  gap: 4px;
+}
+
+.poyori-tab-btn {
+  flex: 1;
+  background: #2b170e;
+  border: 2px solid #140b07;
+  border-radius: 3px;
+  padding: 5px 2px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 1px 1px 0 #5a2e17, inset -1px -1px 0 #0f0704;
+  transition: all 0.1s;
+}
+
+.poyori-tab-btn:hover {
+  background: #3e2215;
+}
+
+.poyori-tab-btn.active {
+  background: var(--screen-bg, #9bbc0f);
+  border-color: #fedb72;
+  box-shadow: inset 1px 1px 0 #ffffff, 0 0 6px #fedb72;
+}
+
+/* ==========================================================================
+   LCD Screen / Dialogue Area with High-Contrast Guarantees
+   ========================================================================== */
+.poyori-lcd-screen {
+  flex: 1;
+  background: var(--screen-bg, #9bbc0f);
+  color: var(--screen-text, #0f380f);
+  border-radius: 4px;
+  border: 2px solid #000000;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
+  padding: 10px;
+  overflow-y: auto;
+  position: relative;
+  font-family: 'PixelOperator', monospace;
+  font-size: 13px;
+  line-height: 1.35;
+  image-rendering: pixelated;
+}
+
+/* Subtle retro scanlines */
+.poyori-lcd-screen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.05) 50%);
+  background-size: 100% 3px;
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   Status View & Direct Care Actions
+   ========================================================================== */
+.poyori-status-view {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Pet Portrait Frame with Stage and Mood Containers on Left */
+.poyori-pet-portrait {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--screen-card-bg, rgba(0, 0, 0, 0.07));
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 2px solid var(--screen-card-border, rgba(0, 0, 0, 0.2));
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.15), inset -1px -1px 0 rgba(0, 0, 0, 0.2);
+  gap: 12px;
+}
+
+.poyori-portrait-meta-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 6px;
+  flex: 1;
+}
+
+.poyori-portrait-creature-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1.2;
+}
+
+.poyori-screen-sprite {
+  width: 64px;
+  height: 64px;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+}
+
+.poyori-pet-name {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 11px;
+  font-weight: bold;
+  margin-top: 4px;
+  color: var(--screen-text, #0f380f);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.poyori-badge-tag {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 8px;
+  background: var(--screen-mid, #c67232);
+  color: #ffffff;
+  padding: 3px 6px;
+  border-radius: 2px;
+  border: 1px solid var(--screen-card-border, rgba(0, 0, 0, 0.2));
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.4);
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Direct Care Action Bar (Replaces defunct ABC hardware buttons) */
+.poyori-direct-care-bar {
+  display: flex;
+  gap: 6px;
+}
+
+.poyori-care-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px 4px;
+  border-radius: 3px;
+  border: 2px solid #24140e;
+  font-family: 'PixelOperator8', monospace;
+  font-size: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #ffffff;
+  text-shadow: 1px 1px 0 #140b07;
+  transition: transform 0.05s;
+}
+
+.poyori-care-btn:active {
+  transform: translateY(2px);
+}
+
+.poyori-care-btn.feed {
+  background: #d63d2f;
+  box-shadow: inset 1px 1px 0 #ea695f, inset -1px -1px 0 #5a1714, 0 2px 0 #140b07;
+}
+.poyori-care-btn.feed:hover { background: #e54c3e; }
+
+.poyori-care-btn.pet {
+  background: #e67e22;
+  box-shadow: inset 1px 1px 0 #f39c12, inset -1px -1px 0 #6e390c, 0 2px 0 #140b07;
+}
+.poyori-care-btn.pet:hover { background: #f39c12; }
+
+.poyori-care-btn.sleep {
+  background: #2980b9;
+  box-shadow: inset 1px 1px 0 #3498db, inset -1px -1px 0 #133d59, 0 2px 0 #140b07;
+}
+.poyori-care-btn.sleep:hover { background: #3498db; }
+
+.poyori-care-btn.pocket {
+  background: #6c5ce7;
+  box-shadow: inset 1px 1px 0 #a29bfe, inset -1px -1px 0 #341f97, 0 2px 0 #140b07;
+}
+.poyori-care-btn.pocket:hover { background: #7d6cf0; }
+.poyori-care-btn.pocket.active {
+  background: #d88344;
+  box-shadow: inset 1px 1px 0 #fedb72, inset -1px -1px 0 #7e3e13, 0 2px 0 #140b07;
+}
+
+/* Vitals Card & High-Contrast Rows */
+.poyori-vitals-card {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background: var(--screen-card-bg, rgba(0, 0, 0, 0.07));
+  padding: 8px;
+  border-radius: 4px;
+  border: 2px solid var(--screen-card-border, rgba(0, 0, 0, 0.2));
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.poyori-vital-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+
+.poyori-vital-row .v-label {
+  color: var(--screen-label, #8c3d12);
+  font-weight: bold;
+  font-family: 'PixelOperator', monospace;
+}
+
+.poyori-vital-row .v-val {
+  color: var(--screen-text, #24140e);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-weight: bold;
+}
+
+/* Grooved XP Progress Bar */
+.poyori-xp-bar-wrap {
+  margin-top: 6px;
+}
+
+.poyori-xp-label {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'PixelOperator8', monospace;
+  font-size: 8px;
+  color: var(--screen-label, #8c3d12);
+  margin-bottom: 3px;
+  font-weight: bold;
+}
+
+.poyori-xp-track {
+  height: 10px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 2px solid var(--screen-card-border, #24140e);
+  border-radius: 2px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.poyori-xp-fill {
+  height: 100%;
+  background: var(--screen-mid, #306230);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+/* ==========================================================================
+   Tasks, Food, Almanac, Wardrobe, and Settings Views
+   ========================================================================== */
+.poyori-tasks-view,
+.poyori-food-view,
+.poyori-zukan-view,
+.poyori-wardrobe-view,
+.poyori-settings-view {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.poyori-subhead {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 9px;
+  color: var(--screen-label, #8c3d12);
+  border-bottom: 2px solid var(--screen-card-border, rgba(0, 0, 0, 0.25));
+  padding-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: bold;
+}
+
+/* Tasks */
+.poyori-add-task-row {
+  display: flex;
+  gap: 4px;
+}
+
+.poyori-add-task-row input {
+  flex: 1;
+  background: #ffffff;
+  color: #1a1a1a;
+  border: 2px solid var(--screen-card-border, #24140e);
+  padding: 4px 6px;
+  font-size: 13px;
+  font-family: inherit;
+  border-radius: 3px;
+  box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.poyori-add-task-row button {
+  background: var(--screen-mid, #306230);
+  color: #ffffff;
+  border: 2px solid #24140e;
+  padding: 4px 8px;
+  font-size: 9px;
+  font-family: 'PixelOperator8', monospace;
+  border-radius: 3px;
+  cursor: pointer;
+  box-shadow: inset 1px 1px 0 rgba(255,255,255,0.3), 0 2px 0 #140b07;
+}
+
+.poyori-task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.poyori-task-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--screen-card-bg, rgba(0, 0, 0, 0.08));
+  border: 1px solid var(--screen-card-border, rgba(0, 0, 0, 0.2));
+  color: var(--screen-text, #24140e);
+  padding: 5px 6px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+.poyori-task-item.done {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.task-title {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--screen-text, #24140e);
+}
+
+.task-reward {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 8px;
+  color: var(--screen-label, #8c3d12);
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.task-del-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.poyori-quest-item {
+  background: var(--screen-card-bg, rgba(0, 0, 0, 0.08));
+  border: 1px solid var(--screen-card-border, rgba(0, 0, 0, 0.2));
+  color: var(--screen-text, #24140e);
+  padding: 6px;
+  border-radius: 3px;
+  margin-bottom: 5px;
+}
+
+.quest-title {
+  color: var(--screen-label, #8c3d12);
+  font-weight: bold;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.quest-bar {
+  height: 6px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--screen-card-border, #24140e);
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 3px 0;
+}
+
+.quest-fill {
+  height: 100%;
+  background: var(--screen-mid, #306230);
+}
+
+.quest-status {
+  color: var(--screen-text, #24140e);
+  font-size: 10px;
+}
+
+/* Food View */
+.poyori-food-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.poyori-food-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--screen-card-bg, rgba(0, 0, 0, 0.08));
+  border: 2px solid var(--screen-card-border, rgba(0, 0, 0, 0.2));
+  color: var(--screen-text, #24140e);
+  padding: 6px 8px;
+  border-radius: 4px;
+}
+
+.food-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.food-info { flex: 1; }
+.food-name {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 9px;
+  color: var(--screen-label, #8c3d12);
+  font-weight: bold;
+}
+.food-desc {
+  font-size: 11px;
+  color: var(--screen-text, #24140e);
+  opacity: 0.9;
+}
+.food-boosts {
+  font-size: 11px;
+  color: var(--screen-text, #24140e);
+  font-weight: bold;
+}
+
+.food-action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.food-count {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 8px;
+  color: var(--screen-text, #24140e);
+}
+
+.feed-btn {
+  background: #27ae60;
+  color: #ffffff;
+  border: 2px solid #24140e;
+  padding: 3px 8px;
+  font-size: 8px;
+  font-family: 'PixelOperator8', monospace;
+  border-radius: 3px;
+  cursor: pointer;
+  box-shadow: inset 1px 1px 0 rgba(255,255,255,0.4), 0 2px 0 #140b07;
+}
+
+.feed-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ==========================================================================
+   Price Indicator Badges (Golden Koban Pixel Tag)
+   Dark slate background (#1c130e), 1px golden pixel border (#fedb72),
+   pixelated Koban coin icon, and bright golden PixelOperator8 typography
+   ========================================================================== */
+.price-indicator-badge,
+.buy-food-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: #1c130e;
+  border: 1px solid #fedb72;
+  border-radius: 3px;
+  padding: 3px 6px;
+  color: #fedb72;
+  font-family: 'PixelOperator8', monospace;
+  font-size: 8px;
+  line-height: 1;
+  letter-spacing: 0.5px;
+  box-shadow: 0 1px 0 #000000, inset 0 0 4px rgba(254, 219, 114, 0.15);
+  cursor: pointer;
+  image-rendering: pixelated;
+  -webkit-font-smoothing: none;
+  transition: transform 0.04s ease, box-shadow 0.04s ease, background 0.1s ease;
+  user-select: none;
+  text-decoration: none;
+}
+
+.price-indicator-badge:hover,
+.buy-food-btn:hover {
+  background: #2a1b12;
+  border-color: #fff2b8;
+  color: #fff2b8;
+  box-shadow: 0 1px 0 #000000, 0 0 6px rgba(254, 219, 114, 0.4);
+}
+
+.price-indicator-badge:active,
+.buy-food-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 0 0 #000000;
+}
+
+.price-indicator-badge:disabled,
+.buy-food-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  border-color: #554433;
+  color: #887766;
+  box-shadow: none;
+  transform: none;
+}
+
+.price-coin-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+.price-coin-icon img {
+  image-rendering: pixelated;
+}
+
+.price-value {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 8px;
+  line-height: 1;
+}
+
+/* Bestiary / Almanac View */
+.poyori-zukan-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.poyori-zukan-entry {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  background: var(--screen-card-bg, rgba(0, 0, 0, 0.08));
+  border: 2px solid var(--screen-card-border, rgba(0, 0, 0, 0.2));
+  color: var(--screen-text, #24140e);
+  padding: 6px 8px;
+  border-radius: 4px;
+}
+
+.zukan-img {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.zukan-img img {
+  width: 36px;
+  height: 36px;
+  image-rendering: pixelated;
+}
+
+.zukan-meta { flex: 1; }
+.zukan-name {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 9px;
+  color: var(--screen-label, #8c3d12);
+  font-weight: bold;
+}
+.zukan-branch {
+  font-size: 11px;
+  color: var(--screen-text, #24140e);
+  opacity: 0.85;
+}
+.zukan-desc {
+  font-size: 12px;
+  color: var(--screen-text, #24140e);
+}
+
+.zukan-info-banner {
+  background: var(--screen-card-bg, rgba(0, 0, 0, 0.08));
+  border: 1px dashed var(--screen-label, #8c3d12);
+  color: var(--screen-text, #24140e);
+  padding: 6px;
+  border-radius: 3px;
+  font-size: 11px;
+  text-align: center;
+}
+
+/* Wardrobe View */
+.poyori-wardrobe-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.poyori-wardrobe-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--screen-card-bg, rgba(0, 0, 0, 0.08));
+  border: 2px solid var(--screen-card-border, rgba(0, 0, 0, 0.2));
+  color: var(--screen-text, #24140e);
+  padding: 6px 8px;
+  border-radius: 4px;
+}
+
+.wardrobe-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wardrobe-info { flex: 1; }
+.wardrobe-name {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 9px;
+  color: var(--screen-label, #8c3d12);
+  font-weight: bold;
+}
+.wardrobe-cost {
+  font-size: 11px;
+  color: var(--screen-text, #24140e);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.equipped-tag {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 8px;
+  color: #27ae60;
+  font-weight: bold;
+}
+
+.equip-btn, .buy-btn {
+  background: var(--screen-mid, #306230);
+  color: #ffffff;
+  border: 2px solid #24140e;
+  padding: 3px 8px;
+  font-size: 8px;
+  font-family: 'PixelOperator8', monospace;
+  border-radius: 3px;
+  cursor: pointer;
+  box-shadow: inset 1px 1px 0 rgba(255,255,255,0.4), 0 2px 0 #140b07;
+}
+
+.poyori-palette-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.palette-swatch-btn {
+  border: 2px solid #24140e;
+  border-radius: 3px;
+  padding: 4px 6px;
+  font-family: 'PixelOperator8', monospace;
+  font-size: 8px;
+  cursor: pointer;
+  box-shadow: inset 1px 1px 0 rgba(255,255,255,0.4), 0 2px 0 #140b07;
+}
+
+.palette-swatch-btn.active {
+  box-shadow: inset 0 0 0 2px #fedb72, 0 0 6px #fedb72;
+}
+
+/* Settings View */
+.settings-row {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.settings-row label {
+  color: var(--screen-label, #8c3d12);
+  font-weight: bold;
+}
+
+.settings-row select,
+.settings-row input[type="text"],
+.settings-row input[type="time"] {
+  background: #ffffff;
+  color: #1a1a1a;
+  border: 2px solid var(--screen-card-border, #24140e);
+  padding: 4px 6px;
+  font-size: 12px;
+  border-radius: 3px;
+  font-family: inherit;
+  box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.time-inputs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.poyori-btn-primary {
+  background: var(--screen-mid, #306230);
+  color: #ffffff;
+  border: 2px solid #24140e;
+  padding: 6px;
+  font-size: 9px;
+  font-family: 'PixelOperator8', monospace;
+  border-radius: 3px;
+  cursor: pointer;
+  box-shadow: inset 1px 1px 0 rgba(255,255,255,0.4), 0 2px 0 #140b07;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.poyori-btn-primary:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #140b07;
+}
+
+/* ==========================================================================
+   Tactile 9-Bit Handheld Console Buttons (A, B, C)
+   Keycap styling inspired by Image 2 with clear functional roles
+   ========================================================================== */
+.poyori-console-controls {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  margin-top: 10px;
+  padding: 8px 10px;
+  background: #180d09;
+  border-radius: 6px;
+  border: 2px solid #0a0503;
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.8), 0 1px 0 rgba(255, 255, 255, 0.08);
+  gap: 10px;
+}
+
+.poyori-console-btn {
+  flex: 1;
+  height: 40px;
+  border-radius: 4px;
+  border: 2px solid #0a0503;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: transform 0.04s ease, box-shadow 0.04s ease, border-color 0.1s ease, background 0.1s ease;
+  pointer-events: auto !important;
+  user-select: none;
+  image-rendering: pixelated;
+  -webkit-font-smoothing: none;
+  background: #241b16;
+  color: #fedb72;
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.18), inset -1px -1px 0 #120b08, 0 4px 0 #000000;
+}
+
+.poyori-console-btn:hover {
+  background: #2e231c;
+  color: #fff2b8;
+  border-color: #45b7b8;
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.28), inset -1px -1px 0 #120b08, 0 4px 0 #000000, 0 0 8px rgba(69, 183, 184, 0.45);
+}
+
+.poyori-console-btn:active {
+  transform: translateY(3px);
+  box-shadow: inset 1px 1px 0 #0a0503, inset -1px -1px 0 rgba(255, 255, 255, 0.08), 0 1px 0 #000000;
+}
+
+.console-btn-label {
+  font-family: 'PixelOperator8', 'PixelOperator', monospace !important;
+  font-size: 8.5px !important;
+  font-weight: bold !important;
+  letter-spacing: 0.8px !important;
+  line-height: 1 !important;
+  text-shadow: 1px 1px 0 #000000;
+  -webkit-font-smoothing: none !important;
+  image-rendering: pixelated;
+}
+
+/* Backward-compatibility aliases for legacy templates */
+.btn-letter,
+.btn-subtext {
+  font-family: 'PixelOperator8', 'PixelOperator', monospace !important;
+  font-size: 8px !important;
+  font-weight: bold !important;
+  letter-spacing: 0.5px !important;
+  -webkit-font-smoothing: none !important;
+  image-rendering: pixelated;
+}
+
+/* ==========================================================================
+   Mood Badges, Fixed Rewards, & Blocked Site Manager
+   ========================================================================== */
+.poyori-mood-tag {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 8px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  margin-top: 3px;
+  border: 1px solid var(--screen-card-border, rgba(0, 0, 0, 0.2));
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: bold;
+}
+
+.poyori-mood-tag.cheerful {
+  background: #27ae60;
+  color: #ffffff;
+}
+
+.poyori-mood-tag.grumpy {
+  background: #e17055;
+  color: #ffffff;
+  animation: grumpyPuff 1s infinite alternate;
+}
+
+@keyframes grumpyPuff {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.04); }
+}
+
+.poyori-mood-tag.sleepy {
+  background: #2980b9;
+  color: #ffffff;
+}
+
+.poyori-mood-tag.sick {
+  background: #d63031;
+  color: #ffffff;
+}
+
+/* Fixed Reward Callout */
+.task-fixed-reward-callout {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--screen-card-bg, rgba(0, 0, 0, 0.08));
+  border: 1px dashed var(--screen-label, #8c3d12);
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-family: 'PixelOperator8', monospace;
+  font-size: 8px;
+  color: var(--screen-label, #8c3d12);
+  margin-top: 2px;
+  margin-bottom: 4px;
+}
+
+.callout-badges {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--screen-text);
+  font-weight: bold;
+}
+
+/* Checkbox Lines */
+.checkbox-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--screen-text);
+}
+
+/* Custom Blocked Sites Container */
+.poyori-add-blocked-row {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.poyori-add-blocked-row input {
+  flex: 1;
+  background: #ffffff;
+  color: #1a1a1a;
+  border: 2px solid var(--screen-card-border, #24140e);
+  padding: 4px 6px;
+  font-size: 12px;
+  border-radius: 3px;
+}
+
+.poyori-add-blocked-row button {
+  background: #d63031;
+  color: #ffffff;
+  border: 2px solid #24140e;
+  padding: 4px 8px;
+  font-size: 8px;
+  font-family: 'PixelOperator8', monospace;
+  border-radius: 3px;
+  cursor: pointer;
+  box-shadow: inset 1px 1px 0 rgba(255,255,255,0.4), 0 2px 0 #140b07;
+}
+
+.poyori-blocked-tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-height: 80px;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.06);
+  padding: 4px;
+  border-radius: 3px;
+  border: 1px solid var(--screen-card-border, rgba(0, 0, 0, 0.15));
+}
+
+.blocked-site-tag {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #24140e;
+  color: #fedb72;
+  border: 1px solid #140b07;
+  padding: 2px 6px;
+  border-radius: 2px;
+  font-size: 11px;
+}
+
+.del-blocked-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+
+
+/* Cure Medicine Button */
+.poyori-care-btn.cure {
+  background: #27ae60;
+  box-shadow: inset 1px 1px 0 #2ecc71, inset -1px -1px 0 #196f3d, 0 2px 0 #140b07;
+  animation: pulse-cure 1.2s infinite ease-in-out;
+}
+.poyori-care-btn.cure:hover { background: #2ecc71; }
+
+@keyframes pulse-cure {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); box-shadow: 0 0 6px #2ecc71; }
+}
+
+/* Breed & Level Tags */
+.poyori-breed-tag {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 7px;
+  background: rgba(0, 0, 0, 0.15);
+  color: var(--screen-text, #0f380f);
+  padding: 2px 5px;
+  border-radius: 2px;
+  border: 1px solid var(--screen-card-border, rgba(0, 0, 0, 0.2));
+  letter-spacing: 0.5px;
+}
+
+.poyori-creature-species {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 8px;
+  color: var(--screen-text, #0f380f);
+  opacity: 0.85;
+  margin-top: 2px;
+}
+
+/* Focus Session Tab */
+.poyori-focus-view {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.poyori-focus-timer-box {
+  background: var(--screen-card-bg, rgba(0, 0, 0, 0.08));
+  border: 2px solid var(--screen-card-border, rgba(0, 0, 0, 0.2));
+  border-radius: 5px;
+  padding: 12px 10px;
+  text-align: center;
+}
+
+.focus-section-label {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 8px;
+  color: var(--screen-label, #8c3d12);
+  font-weight: bold;
+  text-align: left;
+  margin-bottom: 6px;
+}
+
+.poyori-focus-digits {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 26px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  color: var(--screen-text, #0f380f);
+  margin: 8px 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.focus-active-badge {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 8px;
+  color: #fedb72;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.focus-progress-wrap {
+  width: 100%;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--screen-card-border, rgba(0, 0, 0, 0.3));
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 6px 0 10px 0;
+}
+
+.focus-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #27ae60, #2ecc71);
+  transition: width 0.3s ease;
+}
+
+.focus-guard-status {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 7.5px;
+  color: #27ae60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-weight: bold;
+}
+
+.focus-distractions-pill {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 7px;
+  margin-top: 4px;
+  opacity: 0.85;
+  color: var(--screen-text, #0f380f);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.poyori-discipline-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.discipline-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px 6px;
+  font-family: 'PixelOperator8', monospace;
+  font-size: 8px;
+  background: var(--screen-card-bg, rgba(0, 0, 0, 0.05));
+  border: 1.5px solid var(--screen-card-border, rgba(0, 0, 0, 0.2));
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--screen-text, #0f380f);
+  transition: all 0.1s;
+  text-align: left;
+}
+
+.discipline-btn:hover {
+  border-color: #45b7b8;
+  background: rgba(69, 183, 184, 0.15);
+}
+
+.discipline-btn.active {
+  background: #2980b9;
+  color: #ffffff;
+  border-color: #45b7b8;
+  box-shadow: 0 0 8px rgba(69, 183, 184, 0.45);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.4);
+}
+
+.discipline-title-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: bold;
+}
+
+.discipline-name {
+  font-size: 8px;
+}
+
+.discipline-lineage {
+  font-size: 6.5px;
+  opacity: 0.85;
+  letter-spacing: 0.3px;
+}
+
+.duration-selector {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.duration-btn {
+  flex: 1;
+  padding: 8px 2px;
+  font-family: 'PixelOperator8', monospace;
+  font-size: 8px;
+  border: 1.5px solid var(--screen-card-border, rgba(0, 0, 0, 0.2));
+  border-radius: 4px;
+  background: var(--screen-card-bg, rgba(0, 0, 0, 0.05));
+  color: var(--screen-text, #0f380f);
+  cursor: pointer;
+  transition: all 0.1s;
+  text-align: center;
+}
+
+.duration-btn:hover {
+  border-color: #fedb72;
+}
+
+.duration-btn.active {
+  background: #e67e22;
+  color: #ffffff;
+  border-color: #fedb72;
+  box-shadow: 0 0 6px rgba(254, 219, 114, 0.4);
+  font-weight: bold;
+}
+
+.start-focus-btn {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  font-family: 'PixelOperator8', monospace;
+  font-size: 9.5px;
+  font-weight: bold;
+  background: #27ae60;
+  color: #ffffff;
+  border: 2px solid #140b07;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #140b07;
+  text-shadow: 1px 1px 0 #140b07;
+  transition: transform 0.04s, box-shadow 0.04s;
+}
+
+.start-focus-btn:hover {
+  background: #2ecc71;
+}
+
+.start-focus-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #140b07;
+}
+
+.stop-focus-btn {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  font-family: 'PixelOperator8', monospace;
+  font-size: 9.5px;
+  font-weight: bold;
+  background: #c0392b;
+  color: #ffffff;
+  border: 2px solid #140b07;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #140b07;
+  text-shadow: 1px 1px 0 #140b07;
+  transition: transform 0.04s, box-shadow 0.04s;
+}
+
+.stop-focus-btn:hover {
+  background: #e74c3c;
+}
+
+.stop-focus-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #140b07;
+}
+
+.focus-rewards-card {
+  background: var(--screen-card-bg, rgba(0, 0, 0, 0.06));
+  border: 1px dashed var(--screen-card-border, rgba(0, 0, 0, 0.3));
+  border-radius: 4px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rewards-card-header {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 7.5px;
+  font-weight: bold;
+  color: var(--screen-label, #8c3d12);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.rewards-row {
+  display: flex;
+  gap: 6px;
+}
+
+.reward-pill {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 7px;
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--screen-card-border, rgba(0, 0, 0, 0.2));
+  padding: 3px 6px;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--screen-text, #0f380f);
+  font-weight: bold;
+}
+
+.focus-shield-status {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 6.5px;
+  color: #27ae60;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  line-height: 1.2;
+}
+
+.focus-stats-row {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 6.5px;
+  opacity: 0.85;
+  color: var(--screen-text, #0f380f);
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2px;
+}
+
+/* Creature Themes Grid */
+.poyori-theme-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.theme-swatch-btn {
+  padding: 5px 4px;
+  font-family: 'PixelOperator8', monospace;
+  font-size: 7px;
+  border: 1px solid var(--screen-card-border, rgba(0, 0, 0, 0.2));
+  border-radius: 3px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.theme-swatch-btn.active {
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
+}
+
+/* Tamagotchi Size Selector & Live Preview Box */
+.size-preview-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0 12px 0;
+  background: var(--screen-card-bg, rgba(0, 0, 0, 0.05));
+  border: 1.5px solid var(--screen-card-border, rgba(0, 0, 0, 0.2));
+  border-radius: 4px;
+  padding: 6px 8px;
+}
+
+.size-preview-stage {
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 3px;
+  border: 1px solid var(--screen-card-border, rgba(0, 0, 0, 0.2));
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.size-preview-sprite {
+  image-rendering: pixelated;
+  transition: width 0.2s ease, height 0.2s ease;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
+}
+
+.poyori-size-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 5px;
+  flex: 1;
+}
+
+.size-swatch-btn {
+  padding: 6px 4px;
+  font-family: 'PixelOperator8', monospace;
+  font-size: 7px;
+  border: 1.5px solid var(--screen-card-border, rgba(0, 0, 0, 0.25));
+  background: var(--screen-card-bg, rgba(0, 0, 0, 0.06));
+  color: var(--screen-text, #0f380f);
+  cursor: pointer;
+  border-radius: 3px;
+  text-align: center;
+  line-height: 1.3;
+  transition: all 0.1s;
+}
+
+.size-swatch-btn:hover {
+  border-color: #45b7b8;
+  background: rgba(69, 183, 184, 0.15);
+}
+
+.size-swatch-btn.active {
+  border-color: #fedb72;
+  background: #241b16;
+  color: #fedb72;
+  box-shadow: 0 0 6px rgba(254, 219, 114, 0.45);
+  font-weight: bold;
+}
+
+/* Companion Roster (Clean Uncluttered RPG Layout) */
+.poyori-roster-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 6px;
+}
+
+.poyori-roster-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: var(--screen-card-bg, rgba(0, 0, 0, 0.05));
+  border: 1.5px solid var(--screen-card-border, rgba(0, 0, 0, 0.2));
+  border-radius: 4px;
+  transition: border-color 0.1s, box-shadow 0.1s;
+}
+
+.poyori-roster-item.active {
+  border-color: #27ae60;
+  box-shadow: 0 0 4px rgba(39, 174, 96, 0.25);
+}
+
+.roster-avatar {
+  width: 28px;
+  height: 28px;
+  image-rendering: pixelated;
+  flex-shrink: 0;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+  padding: 2px;
+}
+
+.roster-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.roster-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.roster-name {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 8.5px;
+  font-weight: bold;
+  color: var(--screen-text, #0f380f);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.roster-rename-btn {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 6.5px;
+  color: var(--screen-label, #8c3d12);
+  background: rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--screen-card-border, rgba(0, 0, 0, 0.2));
+  border-radius: 2px;
+  padding: 1px 4px;
+  cursor: pointer;
+  opacity: 0.9;
+  transition: all 0.1s;
+}
+
+.roster-rename-btn:hover {
+  opacity: 1;
+  border-color: #fedb72;
+  color: #fedb72;
+  background: #241b16;
+}
+
+.roster-sub-row {
+  display: flex;
+  align-items: center;
+}
+
+.roster-stage {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 7px;
+  opacity: 0.85;
+  color: var(--screen-text, #0f380f);
+}
+
+.roster-action {
+  flex-shrink: 0;
+}
+
+.roster-active-badge {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 7.5px;
+  color: #27ae60;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.switch-roster-btn {
+  font-family: 'PixelOperator8', monospace;
+  font-size: 7.5px;
+  padding: 4px 8px;
+  background: #2980b9;
+  color: #ffffff;
+  border: 1px solid #1a5276;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.switch-roster-btn:hover {
+  background: #3498db;
+}

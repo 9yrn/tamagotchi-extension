@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poyori (ポヨリ) — Dev Access Port</title>
+  <link rel="icon" type="image/png" href="../assets/icons/icon32.png">
+  <link rel="stylesheet" href="../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="../ui/celebration-modal.css">
+  <link rel="stylesheet" href="dev-portal.css">
+</head>
+<body>
+  <!-- Header Banner -->
+  <header class="dev-header">
+    <div class="dev-title-wrap">
+      <span id="dev-icon-header"></span>
+      <div>
+        <h1 class="dev-title">POYORI DEV ACCESS PORT // 神獣デバッグ</h1>
+        <small style="color: var(--dev-muted);">Developer God Mode & Feature Verification Console</small>
+      </div>
+      <span class="dev-badge-active">DEV ACTIVE</span>
+    </div>
+
+    <div>
+      <a href="dashboard.html" id="dev-exit-link" class="dev-exit-btn">Return to Player Dashboard & Revert &rarr;</a>
+    </div>
+  </header>
+
+  <!-- Dev Tools Grid -->
+  <main class="dev-grid">
+    <!-- 1. GOD MODE CARD -->
+    <section class="dev-card featured">
+      <h2 class="dev-card-title">
+        <span id="icon-god-mode"></span>
+        <span>INSTANT GOD MODE (ALL FEATURES)</span>
+      </h2>
+      <p class="dev-card-desc">
+        One-click verification preset: grants 99,999 Koban, discovers all 24 creatures in Zukan, unlocks all 5 accessories, maxes all foods to x99, maxes vitals, and advances streak to 7 days.
+      </p>
+      <button id="btn-activate-godmode" class="dev-btn dev-btn-god">
+        ACTIVATE ALL FEATURES (GOD MODE)
+      </button>
+    </section>
+
+    <!-- 2. CREATURE MORPHER CARD -->
+    <section class="dev-card">
+      <h2 class="dev-card-title">
+        <span id="icon-morpher"></span>
+        <span>24-CREATURE MORPHER</span>
+      </h2>
+      <p class="dev-card-desc">
+        Morph current companion into ANY creature across all 4 branches and 6 evolution stages.
+      </p>
+
+      <div class="morpher-box">
+        <select id="select-morph-creature" class="dev-select">
+          <!-- Populated dynamically with all 24 creatures -->
+        </select>
+
+        <div class="morpher-preview">
+          <div class="morpher-sprite-frame">
+            <img id="morph-preview-img" class="morpher-sprite-img" src="" alt="Preview">
+          </div>
+          <div class="morpher-details">
+            <div id="morph-preview-name" class="morpher-name">Denki Tamago</div>
+            <div id="morph-preview-meta" class="morpher-meta">CYBER・Stage 1</div>
+          </div>
+        </div>
+
+        <button id="btn-morph-now" class="dev-btn dev-btn-primary">
+          Morph Companion Now
+        </button>
+      </div>
+    </section>
+
+    <!-- 3. UNLIMITED MONEY & ECONOMY -->
+    <section class="dev-card">
+      <h2 class="dev-card-title">
+        <span id="icon-economy"></span>
+        <span>ECONOMY & KOBAN COINS</span>
+      </h2>
+      <p class="dev-card-desc">
+        Current Koban: <strong id="lbl-current-koban" style="color: var(--dev-amber); font-size: 16px;">10</strong>
+      </p>
+
+      <div class="dev-btn-row">
+        <button id="btn-add-1k-koban" class="dev-btn dev-btn-warning">+1,000 Koban</button>
+        <button id="btn-add-10k-koban" class="dev-btn dev-btn-warning">+10,000 Koban</button>
+        <button id="btn-set-99k-koban" class="dev-btn dev-btn-warning">Set 99,999 Koban</button>
+        <button id="btn-reset-koban" class="dev-btn dev-btn-danger">Reset to 0 Koban</button>
+      </div>
+    </section>
+
+    <!-- 4. FOOD & GRANARY INVENTORY -->
+    <section class="dev-card">
+      <h2 class="dev-card-title">
+        <span id="icon-food"></span>
+        <span>UNLIMITED FOOD INVENTORY</span>
+      </h2>
+      <p class="dev-card-desc">
+        Stock snacks and traditional medicine without completing tasks.
+      </p>
+
+      <div class="dev-btn-row">
+        <button id="btn-fill-all-food" class="dev-btn dev-btn-success">+50 All Food Items</button>
+        <button id="btn-add-ringo" class="dev-btn dev-btn-primary">+10 Ringo (Apples)</button>
+        <button id="btn-add-nikuman" class="dev-btn dev-btn-primary">+10 Nikuman (Buns)</button>
+        <button id="btn-add-senbei" class="dev-btn dev-btn-primary">+10 Senbei (Crackers)</button>
+        <button id="btn-add-matcha" class="dev-btn dev-btn-primary">+10 Matcha (Tea)</button>
+        <button id="btn-add-kin-ringo" class="dev-btn dev-btn-primary">+10 Kin no Ringo</button>
+        <button id="btn-add-yakuso" class="dev-btn dev-btn-primary">+10 Yakuso (Medicine)</button>
+        <button id="btn-clear-food" class="dev-btn dev-btn-danger">Clear Food Inventory</button>
+      </div>
+    </section>
+
+    <!-- 5. VITALS & MOOD CONTROLS -->
+    <section class="dev-card">
+      <h2 class="dev-card-title">
+        <span id="icon-vitals"></span>
+        <span>VITALS & MOOD STATE CONTROLS</span>
+      </h2>
+      <p class="dev-card-desc">
+        Current Pet: <strong id="lbl-pet-status">Normal</strong>
+      </p>
+
+      <div class="dev-btn-row">
+        <button id="btn-vitals-max" class="dev-btn dev-btn-success">Max All Vitals (100%)</button>
+        <button id="btn-vitals-starve" class="dev-btn dev-btn-warning">Set Starving (0% Onaka)</button>
+        <button id="btn-vitals-exhaust" class="dev-btn dev-btn-warning">Set Exhausted (0% Genki)</button>
+        <button id="btn-toggle-sick" class="dev-btn dev-btn-danger">Toggle Sick / Healthy</button>
+        <button id="btn-toggle-sleep" class="dev-btn dev-btn-primary">Toggle Sleep / Wake</button>
+      </div>
+    </section>
+
+    <!-- 6. TIME MACHINE & STREAKS -->
+    <section class="dev-card">
+      <h2 class="dev-card-title">
+        <span id="icon-time"></span>
+        <span>TIME MACHINE & STREAK SIMULATOR</span>
+      </h2>
+      <p class="dev-card-desc">
+        Simulate multi-day habits or prolonged neglect periods instantly.
+      </p>
+
+      <div class="dev-btn-row">
+        <button id="btn-advance-1day-streak" class="dev-btn dev-btn-success">+1 Day Streak</button>
+        <button id="btn-advance-7day-streak" class="dev-btn dev-btn-success">+7 Days Streak (Komyo Ready)</button>
+        <button id="btn-simulate-12h-neglect" class="dev-btn dev-btn-warning">Simulate 12h Neglect (Grumpy)</button>
+        <button id="btn-simulate-48h-neglect" class="dev-btn dev-btn-danger">Simulate 48h Neglect (Hardcore)</button>
+        <button id="btn-add-100xp" class="dev-btn dev-btn-primary">+100 Study XP</button>
+        <button id="btn-add-500xp" class="dev-btn dev-btn-primary">+500 Study XP</button>
+      </div>
+    </section>
+
+    <!-- 7. CELEBRATORY FANFARE TESTS -->
+    <section class="dev-card">
+      <h2 class="dev-card-title">
+        <span id="icon-fanfare"></span>
+        <span>TEST CELEBRATORY FANFARES</span>
+      </h2>
+      <p class="dev-card-desc">
+        Preview the celebratory popup alerts, audio chimes, and particle animations directly.
+      </p>
+
+      <div class="dev-btn-row">
+        <button id="btn-test-fanfare-cosmetic" class="dev-btn dev-btn-warning">Test Cosmetic Unlock Plaque</button>
+        <button id="btn-test-fanfare-hatch" class="dev-btn dev-btn-success">Test Egg Hatch Fanfare</button>
+        <button id="btn-test-fanfare-shinka" class="dev-btn dev-btn-primary">Test Evolution Fanfare</button>
+        <button id="btn-test-fanfare-komyo" class="dev-btn dev-btn-warning">Test Komyo Ascension Fanfare</button>
+      </div>
+    </section>
+
+    <!-- 8. RESET & SECURITY -->
+    <section class="dev-card">
+      <h2 class="dev-card-title">
+        <span id="icon-security"></span>
+        <span>FACTORY RESET & SECURITY</span>
+      </h2>
+      <p class="dev-card-desc">
+        Reset to pristine starting player conditions before taking screenshots or testing fresh onboarding.
+      </p>
+
+      <div class="dev-btn-row">
+        <button id="btn-revert-original" class="dev-btn dev-btn-warning">Revert to Original Player Progress</button>
+        <button id="btn-factory-reset" class="dev-btn dev-btn-danger">Reset to Clean Player Default</button>
+        <button id="btn-lock-dev-mode" class="dev-btn dev-btn-danger">Exit Dev Mode & Lock Port</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Live Terminal Log Box -->
+  <footer style="margin-top: 24px;">
+    <div style="font-family: 'PixelOperator8', monospace; font-size: 11px; color: var(--dev-green); margin-bottom: 6px;">
+      DEV AUDIT LOG
+    </div>
+    <div id="dev-console-log" class="dev-log-box">
+      <div class="dev-log-line">Poyori Dev Access Port initialized successfully.</div>
+      <div class="dev-log-line">Storage connection active. Ready for feature verification.</div>
+    </div>
+  </footer>
+
+  <script type="module" src="dev-portal.js"></script>
+</body>
+</html>

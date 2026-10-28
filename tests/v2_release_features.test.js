@@ -301,4 +301,42 @@ test('V2 FEATURE: Website Tracking & Presets menu offers neat category filter ta
   assert.ok(dashJs.includes('chip.onclick'), 'dashboard.js must attach click listener to chips to prefill rules');
 });
 
+test('V2 FEATURE: Vitals counters round off values and menu sections are correctly reorganized', () => {
+  const dashHtml = fs.readFileSync(path.join(rootDir, 'dashboard', 'dashboard.html'), 'utf8');
+  const dashJs = fs.readFileSync(path.join(rootDir, 'dashboard', 'dashboard.js'), 'utf8');
+  const modalJs = fs.readFileSync(path.join(rootDir, 'ui', 'handheld-modal.js'), 'utf8');
+
+  // 1. Verify Vitals Rounding logic
+  assert.ok(dashJs.includes('const roundedOnaka = Math.round(onakaVal);'), 'dashboard.js must round Onaka');
+  assert.ok(dashJs.includes('const roundedGenki = Math.round(genkiVal);'), 'dashboard.js must round Genki');
+  assert.ok(dashJs.includes('const roundedKizuna = Math.round(kizunaVal);'), 'dashboard.js must round Kizuna');
+  assert.ok(dashJs.includes('const roundedXp = Math.round(xpVal);'), 'dashboard.js must round XP');
+  assert.ok(dashJs.includes('txtOnaka.textContent = `${roundedOnaka}%`;'), 'txt-onaka must display rounded percentage');
+  assert.ok(modalJs.includes('${Math.round(pet.onaka)}%'), 'handheld-modal must display rounded onaka');
+  assert.ok(modalJs.includes('${Math.round(pet.genki)}%'), 'handheld-modal must display rounded genki');
+  assert.ok(modalJs.includes('${Math.round(pet.kizuna)}%'), 'handheld-modal must display rounded kizuna');
+
+  // 2. Verify Tab Structure & Reorganization
+  const bestiaryMatch = dashHtml.match(/<section id="tab-bestiary"[^>]*>([\s\S]*?)<\/section>/);
+  const wardrobeMatch = dashHtml.match(/<section id="tab-wardrobe"[^>]*>([\s\S]*?)<\/section>/);
+  const settingsMatch = dashHtml.match(/<section id="tab-settings"[^>]*>([\s\S]*?)<\/section>/);
+
+  assert.ok(bestiaryMatch, 'tab-bestiary must exist in dashboard.html');
+  assert.ok(wardrobeMatch, 'tab-wardrobe must exist in dashboard.html');
+  assert.ok(settingsMatch, 'tab-settings must exist in dashboard.html');
+
+  // Companion Roster moved to Zukan / Evolution (tab-bestiary)
+  assert.ok(bestiaryMatch[1].includes('id="dash-roster-grid"'), 'tab-bestiary must contain dash-roster-grid');
+  assert.ok(!wardrobeMatch[1].includes('id="dash-roster-grid"'), 'tab-wardrobe must not contain dash-roster-grid');
+
+  // Three display/theme options moved to Settings (tab-settings)
+  assert.ok(settingsMatch[1].includes('id="dash-creature-themes-row"'), 'tab-settings must contain dash-creature-themes-row');
+  assert.ok(settingsMatch[1].includes('id="dash-pet-size-row"'), 'tab-settings must contain dash-pet-size-row');
+  assert.ok(settingsMatch[1].includes('id="dash-font-size-row"'), 'tab-settings must contain dash-font-size-row');
+
+  assert.ok(!wardrobeMatch[1].includes('id="dash-creature-themes-row"'), 'tab-wardrobe must not contain dash-creature-themes-row');
+  assert.ok(!wardrobeMatch[1].includes('id="dash-pet-size-row"'), 'tab-wardrobe must not contain dash-pet-size-row');
+  assert.ok(!wardrobeMatch[1].includes('id="dash-font-size-row"'), 'tab-wardrobe must not contain dash-font-size-row');
+});
+
 

@@ -375,25 +375,30 @@ function renderOverview() {
   const xpVal = isSelectedActive ? state.pet.xp : (pet.xp ?? 0);
   const maxXp = stageMeta.minXp || 100;
 
+  const roundedOnaka = Math.round(onakaVal);
+  const roundedGenki = Math.round(genkiVal);
+  const roundedKizuna = Math.round(kizunaVal);
+  const roundedXp = Math.round(xpVal);
+
   const txtOnaka = document.getElementById('txt-onaka');
-  if (txtOnaka) txtOnaka.textContent = `${onakaVal}%`;
+  if (txtOnaka) txtOnaka.textContent = `${roundedOnaka}%`;
   const meterOnaka = document.getElementById('meter-onaka');
-  if (meterOnaka) meterOnaka.style.width = `${onakaVal}%`;
+  if (meterOnaka) meterOnaka.style.width = `${Math.min(100, Math.max(0, roundedOnaka))}%`;
 
   const txtGenki = document.getElementById('txt-genki');
-  if (txtGenki) txtGenki.textContent = `${genkiVal}%`;
+  if (txtGenki) txtGenki.textContent = `${roundedGenki}%`;
   const meterGenki = document.getElementById('meter-genki');
-  if (meterGenki) meterGenki.style.width = `${genkiVal}%`;
+  if (meterGenki) meterGenki.style.width = `${Math.min(100, Math.max(0, roundedGenki))}%`;
 
   const txtKizuna = document.getElementById('txt-kizuna');
-  if (txtKizuna) txtKizuna.textContent = `${kizunaVal}%`;
+  if (txtKizuna) txtKizuna.textContent = `${roundedKizuna}%`;
   const meterKizuna = document.getElementById('meter-kizuna');
-  if (meterKizuna) meterKizuna.style.width = `${kizunaVal}%`;
+  if (meterKizuna) meterKizuna.style.width = `${Math.min(100, Math.max(0, roundedKizuna))}%`;
 
   const txtXp = document.getElementById('txt-xp');
-  if (txtXp) txtXp.textContent = `${xpVal} / ${maxXp} XP`;
+  if (txtXp) txtXp.textContent = `${roundedXp} / ${maxXp} XP`;
   const meterXp = document.getElementById('meter-xp');
-  if (meterXp) meterXp.style.width = `${Math.min(100, Math.round((xpVal / maxXp) * 100))}%`;
+  if (meterXp) meterXp.style.width = `${Math.min(100, Math.round((roundedXp / maxXp) * 100))}%`;
 
   // Meta statistics
   const statTasksDone = document.getElementById('stat-tasks-done');
@@ -663,6 +668,66 @@ function renderBestiary() {
       </div>
     `;
   }).join('');
+
+  renderCompanionRoster();
+}
+
+/**
+ * Renders Companion Roster & Swapping in the Zukan / Evolution tab
+ */
+function renderCompanionRoster() {
+  const rosterGrid = document.getElementById('dash-roster-grid');
+  if (!rosterGrid) return;
+  const roster = state.roster || [];
+  rosterGrid.innerHTML = roster.map((comp, idx) => {
+    const isAct = idx === (state.activeRosterIndex || 0);
+    const cMeta = CREATURES[comp.creatureId] || CREATURES.denki_tamago;
+    const compSprite = getCreatureSprite(comp.creatureId, 'idle1', 'none', comp.theme || 'classic_default');
+    return `
+      <div class="wardrobe-card" style="position: relative; border-color: ${isAct ? 'var(--accent-cyan)' : 'inherit'};">
+        <img src="${compSprite}" alt="${escapeHtml(comp.name)}" style="width: 48px; height: 48px; image-rendering: pixelated; margin: 0 auto 6px auto; display: block;" />
+        <div style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+          <strong style="font-size: 13px;">${escapeHtml(comp.name)}</strong>
+          <button class="dash-roster-rename-btn" data-index="${idx}" title="Rename Companion" style="background:none; border:none; cursor:pointer; font-size:10px; color:inherit; opacity:0.8;">[edit]</button>
+        </div>
+        <small>${cMeta.name} • Lv. ${comp.level || 1}</small>
+        <div style="margin-top: 8px;">
+          ${isAct 
+            ? '<span style="color: var(--accent-green); font-size: 11px; font-weight: bold;">Active Companion</span>'
+            : `<button class="btn-primary dash-switch-roster-btn" data-index="${idx}" style="padding: 4px 10px; font-size: 11px;">Switch</button>`
+          }
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  rosterGrid.querySelectorAll('.dash-switch-roster-btn').forEach(b => {
+    b.onclick = async () => {
+      const idx = Number(b.dataset.index);
+      PoyoriEngine.switchActivePet(state, idx);
+      audioSynth.shinkaFanfare();
+      await saveState(state);
+      renderAll();
+    };
+  });
+
+  rosterGrid.querySelectorAll('.dash-roster-rename-btn').forEach(b => {
+    b.onclick = async () => {
+      const idx = Number(b.dataset.index);
+      const comp = state.roster && state.roster[idx];
+      if (!comp) return;
+      const newName = window.prompt(`Enter a custom name for ${comp.name} (1-20 characters):`, comp.name);
+      if (newName && newName.trim()) {
+        comp.name = newName.trim();
+        if (idx === (state.activeRosterIndex || 0)) {
+          state.pet.name = newName.trim();
+        }
+        audioSynth.chirp();
+        await saveState(state);
+        renderAll();
+      }
+    };
+  });
 }
 
 /**
@@ -854,122 +919,6 @@ function renderWardrobe() {
     await saveState(state);
     renderAll();
   };
-
-  // Creature Theme Palettes
-  const themesRow = document.getElementById('dash-creature-themes-row');
-  if (themesRow) {
-    const unlockedThemes = PoyoriEngine.getUnlockedCreatureThemes(pet);
-    themesRow.innerHTML = unlockedThemes.map(th => `
-      <button class="palette-card theme-btn ${pet.theme === th.id ? 'active' : ''}" data-id="${th.id}">
-        <strong>${th.name} (${th.jaName})</strong>
-        <div class="theme-desc">${th.desc}</div>
-      </button>
-    `).join('');
-
-    themesRow.querySelectorAll('.theme-btn').forEach(b => {
-      b.onclick = async () => {
-        PoyoriEngine.setCreatureTheme(state, b.dataset.id);
-        audioSynth.chirp();
-        await saveState(state);
-        renderAll();
-      };
-    });
-  }
-
-  // Tamagotchi Display Size Row
-  const sizeRow = document.getElementById('dash-pet-size-row');
-  if (sizeRow) {
-    const currentSize = state.settings?.petSize || 'normal';
-    sizeRow.querySelectorAll('.dash-size-btn').forEach(btn => {
-      const isAct = btn.dataset.size === currentSize;
-      btn.classList.toggle('active', isAct);
-      btn.onclick = async () => {
-        PoyoriEngine.setPetSize(state, btn.dataset.size);
-        audioSynth.boop();
-        await saveState(state);
-        if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.query) {
-          chrome.tabs.query({}, (tabs) => {
-            tabs.forEach(t => {
-              chrome.tabs.sendMessage(t.id, { action: 'set_pet_size', size: btn.dataset.size }).catch(() => {});
-            });
-          });
-        }
-        renderAll();
-      };
-    });
-  }
-
-  // UI Font Size Row
-  const fontRow = document.getElementById('dash-font-size-row');
-  if (fontRow) {
-    const currentFontSize = state.settings?.fontSize || 'normal';
-    fontRow.querySelectorAll('.dash-font-size-btn').forEach(btn => {
-      const isAct = btn.dataset.fontSize === currentFontSize;
-      btn.classList.toggle('active', isAct);
-      btn.onclick = async () => {
-        PoyoriEngine.setFontSize(state, btn.dataset.fontSize);
-        audioSynth.boop();
-        await saveState(state);
-        applyFontSizeClass(state.settings?.fontSize || 'normal');
-        renderAll();
-      };
-    });
-  }
-
-  // Companion Roster
-  const rosterGrid = document.getElementById('dash-roster-grid');
-  if (rosterGrid) {
-    const roster = state.roster || [];
-    rosterGrid.innerHTML = roster.map((comp, idx) => {
-      const isAct = idx === (state.activeRosterIndex || 0);
-      const cMeta = CREATURES[comp.creatureId] || CREATURES.denki_tamago;
-      const compSprite = getCreatureSprite(comp.creatureId, 'idle1', 'none', comp.theme || 'classic_default');
-      return `
-        <div class="wardrobe-card" style="position: relative; border-color: ${isAct ? 'var(--accent-cyan)' : 'inherit'};">
-          <img src="${compSprite}" alt="${escapeHtml(comp.name)}" style="width: 48px; height: 48px; image-rendering: pixelated; margin: 0 auto 6px auto; display: block;" />
-          <div style="display: flex; align-items: center; justify-content: center; gap: 4px;">
-            <strong style="font-size: 13px;">${escapeHtml(comp.name)}</strong>
-            <button class="dash-roster-rename-btn" data-index="${idx}" title="Rename Companion" style="background:none; border:none; cursor:pointer; font-size:10px; color:inherit; opacity:0.8;">[edit]</button>
-          </div>
-          <small>${cMeta.name} • Lv. ${comp.level || 1}</small>
-          <div style="margin-top: 8px;">
-            ${isAct 
-              ? '<span style="color: var(--accent-green); font-size: 11px; font-weight: bold;">Active Companion</span>'
-              : `<button class="btn-primary dash-switch-roster-btn" data-index="${idx}" style="padding: 4px 10px; font-size: 11px;">Switch</button>`
-            }
-          </div>
-        </div>
-      `;
-    }).join('');
-
-    rosterGrid.querySelectorAll('.dash-switch-roster-btn').forEach(b => {
-      b.onclick = async () => {
-        const idx = Number(b.dataset.index);
-        PoyoriEngine.switchActivePet(state, idx);
-        audioSynth.shinkaFanfare();
-        await saveState(state);
-        renderAll();
-      };
-    });
-
-    rosterGrid.querySelectorAll('.dash-roster-rename-btn').forEach(b => {
-      b.onclick = async () => {
-        const idx = Number(b.dataset.index);
-        const comp = state.roster && state.roster[idx];
-        if (!comp) return;
-        const newName = window.prompt(`Enter a custom name for ${comp.name} (1-20 characters):`, comp.name);
-        if (newName && newName.trim()) {
-          comp.name = newName.trim();
-          if (idx === (state.activeRosterIndex || 0)) {
-            state.pet.name = newName.trim();
-          }
-          audioSynth.chirp();
-          await saveState(state);
-          renderAll();
-        }
-      };
-    });
-  }
 }
 
 /**
@@ -1322,6 +1271,77 @@ function renderSettings() {
         audioSynth.boop();
         await saveState(state);
         renderSettings();
+      };
+    });
+  }
+
+  // Render Display and Theme customization cards (moved from Wardrobe)
+  renderDisplayAndThemes();
+}
+
+/**
+ * Renders Display & Theme settings (Creature themes, Pet size, Font size)
+ */
+function renderDisplayAndThemes() {
+  const pet = state.pet;
+
+  // Creature Theme Palettes
+  const themesRow = document.getElementById('dash-creature-themes-row');
+  if (themesRow) {
+    const unlockedThemes = PoyoriEngine.getUnlockedCreatureThemes(pet);
+    themesRow.innerHTML = unlockedThemes.map(th => `
+      <button class="palette-card theme-btn ${pet.theme === th.id ? 'active' : ''}" data-id="${th.id}">
+        <strong>${th.name} (${th.jaName})</strong>
+        <div class="theme-desc">${th.desc}</div>
+      </button>
+    `).join('');
+
+    themesRow.querySelectorAll('.theme-btn').forEach(b => {
+      b.onclick = async () => {
+        PoyoriEngine.setCreatureTheme(state, b.dataset.id);
+        audioSynth.chirp();
+        await saveState(state);
+        renderAll();
+      };
+    });
+  }
+
+  // Tamagotchi Display Size Row
+  const sizeRow = document.getElementById('dash-pet-size-row');
+  if (sizeRow) {
+    const currentSize = state.settings?.petSize || 'normal';
+    sizeRow.querySelectorAll('.dash-size-btn').forEach(btn => {
+      const isAct = btn.dataset.size === currentSize;
+      btn.classList.toggle('active', isAct);
+      btn.onclick = async () => {
+        PoyoriEngine.setPetSize(state, btn.dataset.size);
+        audioSynth.boop();
+        await saveState(state);
+        if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.query) {
+          chrome.tabs.query({}, (tabs) => {
+            tabs.forEach(t => {
+              chrome.tabs.sendMessage(t.id, { action: 'set_pet_size', size: btn.dataset.size }).catch(() => {});
+            });
+          });
+        }
+        renderAll();
+      };
+    });
+  }
+
+  // UI Font Size Row
+  const fontRow = document.getElementById('dash-font-size-row');
+  if (fontRow) {
+    const currentFontSize = state.settings?.fontSize || 'normal';
+    fontRow.querySelectorAll('.dash-font-size-btn').forEach(btn => {
+      const isAct = btn.dataset.fontSize === currentFontSize;
+      btn.classList.toggle('active', isAct);
+      btn.onclick = async () => {
+        PoyoriEngine.setFontSize(state, btn.dataset.fontSize);
+        audioSynth.boop();
+        await saveState(state);
+        applyFontSizeClass(state.settings?.fontSize || 'normal');
+        renderAll();
       };
     });
   }

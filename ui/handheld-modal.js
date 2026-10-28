@@ -271,15 +271,15 @@ export class HandheldModal {
         <div class="poyori-vitals-card">
           <div class="poyori-vital-row">
             <span class="v-label">${getTerm('hunger', mode)}:</span>
-            <span class="v-val">${onakaHearts} (${pet.onaka}%)</span>
+            <span class="v-val">${onakaHearts} (${Math.round(pet.onaka)}%)</span>
           </div>
           <div class="poyori-vital-row">
             <span class="v-label">${getTerm('energy', mode)}:</span>
-            <span class="v-val">${genkiBars} (${pet.genki}%)</span>
+            <span class="v-val">${genkiBars} (${Math.round(pet.genki)}%)</span>
           </div>
           <div class="poyori-vital-row">
             <span class="v-label">${getTerm('bond', mode)}:</span>
-            <span class="v-val">${getPixelIconHtml('sakura', 12)} ${pet.kizuna}%</span>
+            <span class="v-val">${getPixelIconHtml('sakura', 12)} ${Math.round(pet.kizuna)}%</span>
           </div>
           <div class="poyori-vital-row">
             <span class="v-label">${getTerm('streak', mode)}:</span>

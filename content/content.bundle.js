@@ -1878,18 +1878,18 @@ class PoyoriEngine {
 
     // Hunger decay (approx 5% per hour when awake, 2% when asleep)
     const hungerDecayRate = pet.isSleeping ? 0.033 : 0.083; // points per minute
-    pet.onaka = Math.max(0, Math.min(100, pet.onaka - (elapsedMinutes * hungerDecayRate)));
+    pet.onaka = Math.max(0, Math.min(100, Math.round((pet.onaka - (elapsedMinutes * hungerDecayRate)) * 100) / 100));
 
     // Energy regeneration while sleeping, decay while awake
     if (pet.isSleeping) {
-      pet.genki = Math.min(100, pet.genki + (elapsedMinutes * 0.2));
+      pet.genki = Math.min(100, Math.round((pet.genki + (elapsedMinutes * 0.2)) * 100) / 100);
       // Wake up if full energy and not in scheduled bedtime
       if (pet.genki >= 95 && !this.isBedtime(state.settings.bedtimeStart, state.settings.bedtimeEnd)) {
         pet.isSleeping = false;
       }
     } else {
       // Gentle waking energy decay
-      pet.genki = Math.max(0, pet.genki - (elapsedMinutes * 0.02));
+      pet.genki = Math.max(0, Math.round((pet.genki - (elapsedMinutes * 0.02)) * 100) / 100);
     }
 
     // Sickness check
@@ -6732,15 +6732,15 @@ class HandheldModal {
         <div class="poyori-vitals-card">
           <div class="poyori-vital-row">
             <span class="v-label">${getTerm('hunger', mode)}:</span>
-            <span class="v-val">${onakaHearts} (${pet.onaka}%)</span>
+            <span class="v-val">${onakaHearts} (${Math.round(pet.onaka)}%)</span>
           </div>
           <div class="poyori-vital-row">
             <span class="v-label">${getTerm('energy', mode)}:</span>
-            <span class="v-val">${genkiBars} (${pet.genki}%)</span>
+            <span class="v-val">${genkiBars} (${Math.round(pet.genki)}%)</span>
           </div>
           <div class="poyori-vital-row">
             <span class="v-label">${getTerm('bond', mode)}:</span>
-            <span class="v-val">${getPixelIconHtml('sakura', 12)} ${pet.kizuna}%</span>
+            <span class="v-val">${getPixelIconHtml('sakura', 12)} ${Math.round(pet.kizuna)}%</span>
           </div>
           <div class="poyori-vital-row">
             <span class="v-label">${getTerm('streak', mode)}:</span>

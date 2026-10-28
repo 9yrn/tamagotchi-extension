@@ -5,7 +5,7 @@
  */
 
 import { getState, saveState, subscribeState } from '../shared/storage.js';
-import { CREATURES, STAGES, FOOD_ITEMS, ACCESSORIES, PALETTES, DOMAIN_PRESETS, getTerm, DEFAULT_STATE } from '../shared/constants.js';
+import { CREATURES, STAGES, FOOD_ITEMS, ACCESSORIES, PALETTES, DOMAIN_PRESETS, getTerm, DEFAULT_STATE, getCreatureSound } from '../shared/constants.js';
 import { PoyoriEngine } from '../shared/game-engine.js';
 import { getCreatureSprite } from '../content/sprites.js';
 import { audioSynth } from '../ui/audio.js';
@@ -314,6 +314,12 @@ function renderOverview() {
     stageTitleEl.textContent = `${getTerm(stageMeta.termKey, mode)} — ${creature.name}`;
   }
 
+  const soundBubble = document.getElementById('dash-sound-bubble');
+  if (soundBubble) {
+    soundBubble.textContent = getCreatureSound(pet.creatureId);
+    soundBubble.style.display = 'inline-block';
+  }
+
   let moodDesc = getTerm('moodCheerful', mode) || 'Cheerful & Healthy';
   if (isSelectedActive && state.pet.isSleeping) moodDesc = `${getTerm('moodSleepy', mode)} (Recovering Energy)`;
   else if (isSelectedActive && state.pet.isSick) moodDesc = `${getTerm('moodSick', mode)} (Needs Care / Medicine)`;
@@ -573,6 +579,7 @@ function setupOverviewActions() {
   const handlePetInteraction = async () => {
     const res = PoyoriEngine.pet(state);
     audioSynth.purr();
+    audioSynth.playAnimalSound(state.pet?.creatureId);
     await saveState(state);
     renderSidebar();
     renderOverview();
@@ -620,6 +627,14 @@ function setupOverviewActions() {
   if (overviewPetSprite) overviewPetSprite.onclick = handlePetInteraction;
   const brandPetSprite = document.getElementById('brand-sprite');
   if (brandPetSprite) brandPetSprite.onclick = handlePetInteraction;
+
+  const dashSoundBubble = document.getElementById('dash-sound-bubble');
+  if (dashSoundBubble) {
+    dashSoundBubble.onclick = () => {
+      dashSoundBubble.textContent = getCreatureSound(state.pet?.creatureId);
+      audioSynth.playAnimalSound(state.pet?.creatureId);
+    };
+  }
 
   document.getElementById('btn-care-sleep').addEventListener('click', async () => {
     state.pet.isSleeping = !state.pet.isSleeping;

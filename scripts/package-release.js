@@ -13,8 +13,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
 const releaseDir = path.resolve(rootDir, 'release');
+const pkg = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
+const version = pkg.version || '2.1.0';
 
-console.log('Packaging Poyori v2.0.0 for Release...');
+console.log(`Packaging Poyori v${version} for Release...`);
 
 // 1. Run fresh build
 execSync('npm run build', { cwd: rootDir, stdio: 'inherit' });
@@ -25,8 +27,8 @@ if (!fs.existsSync(releaseDir)) {
   fs.mkdirSync(releaseDir, { recursive: true });
 }
 
-const chromeZip = path.join(releaseDir, 'poyori-v2.0.0-chrome.zip');
-const firefoxZip = path.join(releaseDir, 'poyori-v2.0.0-firefox.zip');
+const chromeZip = path.join(releaseDir, `poyori-v${version}-chrome.zip`);
+const firefoxZip = path.join(releaseDir, `poyori-v${version}-firefox.zip`);
 
 // Remove older archives if present
 if (fs.existsSync(chromeZip)) fs.unlinkSync(chromeZip);

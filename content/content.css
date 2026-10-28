@@ -111,6 +111,47 @@
   transform: translateX(-50%) scale(1);
 }
 
+/* Floating Quirky Animal Sound Bubble */
+.poyori-sound-bubble {
+  position: absolute;
+  top: -32px;
+  left: 50%;
+  transform: translateX(-50%) scale(0.6);
+  background: #f5e4c8;
+  color: #24140e;
+  border: 2px solid #24140e;
+  box-shadow: inset 0 1px 0 #fff, 0 3px 6px rgba(0, 0, 0, 0.35);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-family: 'PixelOperator8', monospace;
+  font-size: 8px;
+  font-weight: bold;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 10;
+}
+
+.poyori-sound-bubble.visible {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
+.poyori-sound-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid #24140e;
+}
+
 /* ==========================================================================
    Quick Action Speech Bubble (Inspired by Wooden Parchment Dialog Box in Image 2)
    ========================================================================== */

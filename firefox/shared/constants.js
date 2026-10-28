@@ -656,6 +656,93 @@ export const CREATURES = {
   komyo_daradara: { id: 'komyo_daradara', isAlias: true, branch: 'gutara', breed: 'shiba', stage: 6, isKomyo: true, name: 'Taida no Kami', jaName: '怠惰の神', desc: 'Radiant canine divinity.', spriteKey: 'komyo_komainu' }
 };
 
+/**
+ * Quirky breed-specific animal sound onomatopoeias for ambient cries and speech bubbles
+ */
+export const BREED_SOUNDS = {
+  cat: [
+    '*nya-boop!*',
+    '*mew-byte~*',
+    '*purr-chirp!*',
+    '*prrr-bzzzt!*',
+    '*meow-tap~*'
+  ],
+  bird: [
+    '*pip-tweet!*',
+    '*chirp-trill~*',
+    '*peep-fluff!*',
+    '*sqwk-peek!*',
+    '*coo-chirp~*'
+  ],
+  fox: [
+    '*kon-kon!*',
+    '*yip-snicker~*',
+    '*wap-wap!*',
+    '*keww-pounce!*',
+    '*gekk-gekk!*'
+  ],
+  owl: [
+    '*hoo-hoo?*',
+    '*skreep-blink!*',
+    '*hoot-whirr~*',
+    '*poot-hoo!*',
+    '*krr-hoot~*'
+  ],
+  dragon: [
+    '*rawr-pip!*',
+    '*garr-sizzle~*',
+    '*krrr-boof!*',
+    '*skree-zap!*',
+    '*chuff-puff!*'
+  ],
+  shiba: [
+    '*wan-wan!*',
+    '*borf-tailwag~*',
+    '*awoo-tippy!*',
+    '*ruff-snort!*',
+    '*yip-pant~*'
+  ],
+  slacker: [
+    '*snooze-zzz...*',
+    '*groan-flop~*',
+    '*yawn-blep...*'
+  ],
+  egg: [
+    '*wobble-tap...*',
+    '*pip...*',
+    '*hum-glow~*'
+  ]
+};
+
+/**
+ * Resolves a quirky animal sound string for a creature or breed
+ */
+export function getCreatureSound(creatureIdOrBreed) {
+  let breed = 'cat';
+  if (creatureIdOrBreed && BREED_SOUNDS[creatureIdOrBreed]) {
+    breed = creatureIdOrBreed;
+  } else if (creatureIdOrBreed && typeof creatureIdOrBreed === 'string') {
+    const creature = CREATURES[creatureIdOrBreed];
+    if (creature) {
+      if (creature.stage === 1) breed = 'egg';
+      else if (creature.branch === 'gutara' || creature.branch === 'slacker') breed = 'slacker';
+      else breed = creature.breed || 'cat';
+    } else {
+      const lower = creatureIdOrBreed.toLowerCase();
+      if (lower.includes('egg') || lower.includes('tamago')) breed = 'egg';
+      else if (lower.includes('slacker') || lower.includes('gutara')) breed = 'slacker';
+      else if (lower.includes('bird') || lower.includes('chick') || lower.includes('finch') || lower.includes('crane') || lower.includes('phoenix')) breed = 'bird';
+      else if (lower.includes('fox') || lower.includes('kitsune')) breed = 'fox';
+      else if (lower.includes('owl') || lower.includes('sage') || lower.includes('kenja')) breed = 'owl';
+      else if (lower.includes('dragon') || lower.includes('wyvern') || lower.includes('ryu')) breed = 'dragon';
+      else if (lower.includes('dog') || lower.includes('shiba') || lower.includes('inu')) breed = 'shiba';
+      else if (lower.includes('cat') || lower.includes('neko')) breed = 'cat';
+    }
+  }
+  const sounds = BREED_SOUNDS[breed] || BREED_SOUNDS.cat;
+  return sounds[Math.floor(Math.random() * sounds.length)];
+}
+
 export const FOOD_ITEMS = {
   ringo: {
     id: 'ringo',

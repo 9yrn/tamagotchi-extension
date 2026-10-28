@@ -6,6 +6,7 @@
 import { getCreatureSprite, getAccessorySvg } from './sprites.js';
 import { audioSynth } from '../ui/audio.js';
 import { getPixelIconHtml } from '../shared/pixel-icons.js';
+import { getCreatureSound } from '../shared/constants.js';
 
 export class PoyoriController {
   constructor(shadowRoot, options = {}) {
@@ -17,6 +18,7 @@ export class PoyoriController {
     this.spriteEl = null;
     this.accessoryEl = null;
     this.emoteEl = null;
+    this.soundBubbleEl = null;
     this.bubbleContainer = null;
 
     // Pet Settings & Adjustable Size
@@ -24,12 +26,16 @@ export class PoyoriController {
     const presetSizes = { small: 48, normal: 64, large: 80, giant: 96 };
     this.sizePx = (options.settings && (options.settings.petSizePx || presetSizes[options.settings.petSize])) || 64;
 
-    // Position & Physics
-    this.x = Math.max(50, window.innerWidth - 180);
-    this.y = window.innerHeight - this.sizePx - 6; // Bottom viewport edge
-    this.vx = 0.8;
-    this.direction = -1; // -1: left, 1: right
-    this.state = 'idle'; // 'idle' | 'walk' | 'sleep' | 'drag' | 'eat' | 'cheer'
+    // Position & Physics — Corner-to-corner walking patrol
+    const winW = (typeof window !== 'undefined' && window.innerWidth) || 1024;
+    const winH = (typeof window !== 'undefined' && window.innerHeight) || 768;
+    this.x = Math.max(12, winW - this.sizePx - 16);
+    this.y = winH - this.sizePx - 6; // Bottom viewport edge
+    this.vx = 0.85;
+    this.direction = -1; // -1: left toward left corner, 1: right toward right corner
+    this.state = 'idle';
+    this.cornerRestSteps = 0;
+    this.nextDirection = 1;
     
     // Animation frame timing
     this.frameIndex = 0;
@@ -83,9 +89,14 @@ export class PoyoriController {
     this.emoteEl = document.createElement('div');
     this.emoteEl.className = 'poyori-emote-bubble';
 
+    // Animal Sound Bubble
+    this.soundBubbleEl = document.createElement('div');
+    this.soundBubbleEl.className = 'poyori-sound-bubble';
+
     spriteWrapper.appendChild(this.spriteEl);
     spriteWrapper.appendChild(this.accessoryEl);
     this.container.appendChild(this.emoteEl);
+    this.container.appendChild(this.soundBubbleEl);
     this.container.appendChild(spriteWrapper);
 
     this.shadowRoot.appendChild(this.container);
@@ -236,6 +247,30 @@ export class PoyoriController {
     }, duration);
   }
 
+  showSoundBubble(customText, duration = 2500) {
+    if (!this.soundBubbleEl) return;
+    const sound = customText || getCreatureSound(this.petData.creatureId);
+    this.soundBubbleEl.textContent = sound;
+    this.soundBubbleEl.classList.add('visible');
+    try {
+      if (audioSynth && typeof audioSynth.playAnimalSound === 'function') {
+        audioSynth.playAnimalSound(this.petData.creatureId);
+      }
+    } catch (_) {}
+    clearTimeout(this._soundTimeout);
+    this._soundTimeout = setTimeout(() => {
+      if (this.soundBubbleEl) this.soundBubbleEl.classList.remove('visible');
+    }, duration);
+  }
+
+  reachCorner(nextDirection) {
+    this.state = 'idle';
+    this.nextDirection = nextDirection;
+    this.cornerRestSteps = 6; // Rest at corner for ~2.7s before turning
+    this.stateTimer = 0;
+    this.showSoundBubble();
+  }
+
   glideToFloor() {
     const floorY = Math.max(10, window.innerHeight - this.sizePx - 6);
     if (this.y >= floorY) return;
@@ -263,6 +298,13 @@ export class PoyoriController {
   }
 
   bindEvents() {
+    if (this.soundBubbleEl) {
+      this.soundBubbleEl.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.showSoundBubble();
+      });
+    }
+
     // Drag & Drop
     this.container.addEventListener('pointerdown', (e) => {
       if (e.button !== 0) return; // Left click only
@@ -359,19 +401,25 @@ export class PoyoriController {
         this.updateSpriteGraphics();
       }
 
-      // Smooth roaming physics
+      // Smooth roaming physics: corner-to-corner walking patrol
       if (!this.isDragging && this.state === 'walk') {
         this.x += this.vx * this.direction;
         
-        // Boundaries
-        if (this.x <= 20) {
-          this.x = 20;
-          this.direction = 1;
-        } else if (this.x >= window.innerWidth - this.sizePx - 16) {
-          this.x = window.innerWidth - this.sizePx - 16;
-          this.direction = -1;
+        // Dynamic edge corners adapting to any aspect ratio and screen width
+        const minX = 12;
+        const winW = (typeof window !== 'undefined' && window.innerWidth) || 1024;
+        const maxX = Math.max(minX, winW - this.sizePx - 12);
+
+        if (this.direction === -1 && this.x <= minX) {
+          this.x = minX;
+          this.reachCorner(1); // Reached left corner, turn toward right corner
+        } else if (this.direction === 1 && this.x >= maxX) {
+          this.x = maxX;
+          this.reachCorner(-1); // Reached right corner, turn toward left corner
         }
-        this.container.style.left = `${this.x}px`;
+        if (this.container && this.container.style) {
+          this.container.style.left = `${this.x}px`;
+        }
       }
 
       requestAnimationFrame(loop);
@@ -412,21 +460,32 @@ export class PoyoriController {
       }
     }
 
+    // Occasional ambient quirky sound during roaming (every ~20-30 seconds)
+    if (this.frameIndex > 0 && this.frameIndex % 45 === 0 && Math.random() > 0.3) {
+      this.showSoundBubble();
+    }
+
     this.stateTimer++;
 
-    // Switch between walking and idling every few steps
-    if (this.state === 'idle' && this.stateTimer > 8) {
-      // 50% chance to start walking or turn around
-      if (Math.random() > 0.4) {
+    // Corner rest handling or idle-to-walk transition
+    if (this.state === 'idle') {
+      if (this.cornerRestSteps > 0) {
+        this.cornerRestSteps--;
+        if (this.cornerRestSteps <= 0) {
+          // Finished resting at corner, flip and walk across to opposite corner!
+          this.direction = (this.nextDirection !== undefined) ? this.nextDirection : (this.x <= 20 ? 1 : -1);
+          this.state = 'walk';
+          this.stateTimer = 0;
+        }
+      } else if (this.stateTimer > 6) {
+        // Resume walking to opposite corner
+        const minX = 12;
+        const winW = (typeof window !== 'undefined' && window.innerWidth) || 1024;
+        const maxX = Math.max(minX, winW - this.sizePx - 12);
+        this.direction = (this.x <= minX + 50) ? 1 : -1;
         this.state = 'walk';
-        this.direction = Math.random() > 0.5 ? 1 : -1;
-        this.stateTimer = 0;
-      } else {
         this.stateTimer = 0;
       }
-    } else if (this.state === 'walk' && this.stateTimer > 12) {
-      this.state = 'idle';
-      this.stateTimer = 0;
     }
   }
 }

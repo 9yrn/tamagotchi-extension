@@ -33,11 +33,13 @@ export class QuickBubble {
     this.shadowRoot.appendChild(this.container);
 
     // Close when clicking outside bubble and pet
-    window.addEventListener('pointerdown', (e) => {
-      if (this.isOpen && !e.composedPath().some(el => el.classList && (el.classList.contains('poyori-quick-bubble') || el.classList.contains('poyori-pet-container')))) {
-        this.close();
-      }
-    });
+    if (typeof window !== 'undefined') {
+      window.addEventListener('pointerdown', (e) => {
+        if (this.isOpen && !e.composedPath().some(el => el.classList && (el.classList.contains('poyori-quick-bubble') || el.classList.contains('poyori-pet-container')))) {
+          this.close();
+        }
+      });
+    }
   }
 
   toggle(petX, petY, state) {
@@ -46,6 +48,29 @@ export class QuickBubble {
     } else {
       this.open(petX, petY, state);
     }
+  }
+
+  static getMoodMessage(state) {
+    const pet = state.pet;
+    const mode = state.settings?.languageMode || 'bilingual';
+    const mood = PoyoriEngine.getPetMood(state);
+    const safeName = escapeHtml(pet.name);
+    let moodMsg = `${safeName} is cheerful and exploring happily!`;
+    if (mode === 'japanese') moodMsg = `${safeName}はご機嫌に探索しています！`;
+    else if (mode === 'bilingual') moodMsg = `${safeName} is cheerful and exploring happily! (ご機嫌)`;
+
+    if (pet.isSleeping) {
+      moodMsg = mode === 'japanese' ? `${safeName}はぐっすり眠っています… zzz` : `${safeName} is sound asleep... resting will restore energy.`;
+    } else if (pet.isSick) {
+      moodMsg = mode === 'japanese' ? `${safeName}は体調が悪そうです… 薬草で治してあげましょう。` : `${safeName} is feeling unwell. Some medicinal Yakusō would help them recover.`;
+    } else if (mood === 'grumpy') {
+      moodMsg = mode === 'japanese' 
+        ? `${safeName}は不機嫌そうです。おやつをあげたり撫でてあげると落ち着くかもしれません。` 
+        : `${safeName} is grumpy. Maybe a snack or some gentle pats would calm them down.`;
+    } else if (pet.onaka < 30) {
+      moodMsg = mode === 'japanese' ? `${safeName}のお腹が鳴っています。おやつをあげると喜びそうです！` : `${safeName}'s tummy is rumbling. Maybe a snack would cheer them up!`;
+    }
+    return moodMsg;
   }
 
   open(petX, petY, state) {
@@ -61,24 +86,9 @@ export class QuickBubble {
     this.container.style.top = `${bubbleY}px`;
     this.container.style.display = 'flex';
 
-    // Message with Grumpy neglect reaction and localization
-    const mood = PoyoriEngine.getPetMood(state);
+    // Third-person observational caretaker narrative
     const safeName = escapeHtml(pet.name);
-    let moodMsg = `${safeName} is cheerful! (ご機嫌)`;
-    if (mode === 'japanese') moodMsg = `${safeName}はご機嫌です！`;
-    else if (mode === 'english') moodMsg = `${safeName} is cheerful!`;
-
-    if (pet.isSleeping) {
-      moodMsg = mode === 'japanese' ? `${safeName}はぐっすり眠っています… zzz` : `${safeName} is sound asleep... zzz`;
-    } else if (pet.isSick) {
-      moodMsg = mode === 'japanese' ? `${safeName}は体調が悪そうです… 薬草を！` : `${safeName} feels sick... needs medicine!`;
-    } else if (mood === 'grumpy') {
-      moodMsg = mode === 'japanese' 
-        ? `ぷんぷん！${safeName}は不機嫌です！構ってください！` 
-        : `Hmph! ${safeName} is grumpy... give me snacks and attention!`;
-    } else if (pet.onaka < 30) {
-      moodMsg = mode === 'japanese' ? `${safeName}はお腹が空いています！` : `${safeName} is feeling hungry!`;
-    }
+    const moodMsg = QuickBubble.getMoodMessage(state);
 
     this.container.innerHTML = `
       <div class="bubble-header">

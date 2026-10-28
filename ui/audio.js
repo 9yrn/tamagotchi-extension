@@ -285,6 +285,94 @@ class RetroAudioSynth {
     osc.start(now);
     osc.stop(now + 0.04);
   }
+
+  /**
+   * Breed-specific synthesized chiptune cries
+   */
+  playAnimalSound(breedOrCreatureId) {
+    if (this.muted) return;
+    this.init();
+    this.resume();
+    if (!this.ctx) return;
+
+    let b = 'cat';
+    if (typeof breedOrCreatureId === 'string') {
+      if (breedOrCreatureId.includes('bird') || breedOrCreatureId.includes('tori') || breedOrCreatureId.includes('suzume')) b = 'bird';
+      else if (breedOrCreatureId.includes('fox') || breedOrCreatureId.includes('kitsune')) b = 'fox';
+      else if (breedOrCreatureId.includes('owl') || breedOrCreatureId.includes('fukuro')) b = 'owl';
+      else if (breedOrCreatureId.includes('dragon') || breedOrCreatureId.includes('ryu') || breedOrCreatureId.includes('tatsu')) b = 'dragon';
+      else if (breedOrCreatureId.includes('shiba') || breedOrCreatureId.includes('inu')) b = 'shiba';
+      else if (breedOrCreatureId.includes('tamago') || breedOrCreatureId.includes('egg')) b = 'egg';
+    }
+
+    const now = this.ctx.currentTime;
+    if (b === 'cat') {
+      this.purr();
+    } else if (b === 'bird') {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, now);
+      osc.frequency.linearRampToValueAtTime(1400, now + 0.06);
+      osc.frequency.linearRampToValueAtTime(1100, now + 0.12);
+      gain.gain.setValueAtTime(0.12 * this.volume, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.14);
+    } else if (b === 'shiba') {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(400, now);
+      osc.frequency.exponentialRampToValueAtTime(250, now + 0.09);
+      gain.gain.setValueAtTime(0.18 * this.volume, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.09);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.09);
+    } else if (b === 'owl') {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(320, now);
+      osc.frequency.linearRampToValueAtTime(240, now + 0.22);
+      gain.gain.setValueAtTime(0.15 * this.volume, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.25);
+    } else if (b === 'dragon') {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(140, now);
+      osc.frequency.linearRampToValueAtTime(80, now + 0.15);
+      gain.gain.setValueAtTime(0.12 * this.volume, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.16);
+    } else if (b === 'fox') {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(650, now);
+      osc.frequency.linearRampToValueAtTime(820, now + 0.05);
+      gain.gain.setValueAtTime(0.1 * this.volume, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.08);
+    } else {
+      this.chirp();
+    }
+  }
 }
 
 export const audioSynth = new RetroAudioSynth();

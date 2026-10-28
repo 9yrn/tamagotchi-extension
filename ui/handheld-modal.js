@@ -6,7 +6,7 @@
  * and comprehensive multi-language support.
  */
 
-import { STAGES, CREATURES, FOOD_ITEMS, ACCESSORIES, PALETTES, BRANCHES, CREATURE_THEMES, getTerm } from '../shared/constants.js';
+import { STAGES, CREATURES, FOOD_ITEMS, ACCESSORIES, PALETTES, BRANCHES, CREATURE_THEMES, getTerm, getCreatureSound } from '../shared/constants.js';
 import { PoyoriEngine } from '../shared/game-engine.js';
 import { audioSynth } from './audio.js';
 import { getCreatureSprite } from '../content/sprites.js';
@@ -241,6 +241,7 @@ export class HandheldModal {
           </div>
           <!-- Center/Right Creature Sprite & Name Display -->
           <div class="poyori-portrait-creature-center">
+            <div class="device-sound-bubble" id="device-sound-bubble" title="Click to hear sound!">${getCreatureSound(pet.creatureId)}</div>
             <img class="poyori-screen-sprite ${isPocket ? 'pocket-sleeping' : ''}" id="status-pet-sprite" src="${spriteSvg}" alt="${creature.name}" style="cursor: pointer; width: ${(this.state.settings && this.state.settings.petSizePx) || 64}px; height: ${(this.state.settings && this.state.settings.petSizePx) || 64}px; ${isPocket ? 'opacity: 0.75; filter: drop-shadow(0 0 4px rgba(0,0,0,0.5));' : ''}" title="Click Poyori to toggle Pocket Mode (resting companion)!">
             <div class="poyori-pet-name">${escapeHtml(pet.name) || creature.name} ${getPixelIconHtml(pet.gender === 'male' ? 'gender_male' : 'gender_female', 10)} <button class="poyori-rename-btn" id="rename-pet-btn" title="Rename Companion" style="background:none;border:none;cursor:pointer;font-size:8px;color:var(--screen-text,#0f380f);opacity:0.8;">[edit]</button> ${pet.isKomyo ? getPixelIconHtml('star', 12) : ''}</div>
             <div class="poyori-creature-species">${creature.name} (${creature.jaName})</div>
@@ -895,10 +896,19 @@ export class HandheldModal {
       });
     }
 
+    const soundBubble = this.modalEl.querySelector('#device-sound-bubble');
+    if (soundBubble) {
+      soundBubble.addEventListener('click', () => {
+        soundBubble.textContent = getCreatureSound(this.state.pet.creatureId);
+        audioSynth.playAnimalSound(this.state.pet.creatureId);
+      });
+    }
+
     const carePetBtn = this.modalEl.querySelector('#care-pet-btn');
     if (carePetBtn) {
       carePetBtn.addEventListener('click', () => {
         audioSynth.purr();
+        audioSynth.playAnimalSound(this.state.pet.creatureId);
         PoyoriEngine.pet(this.state);
         this.isBlushing = true;
         this.onPetAction('pet');
@@ -952,7 +962,10 @@ export class HandheldModal {
 
     const statusSprite = this.modalEl.querySelector('#status-pet-sprite');
     if (statusSprite) {
-      statusSprite.addEventListener('click', togglePocket);
+      statusSprite.addEventListener('click', () => {
+        audioSynth.playAnimalSound(this.state.pet.creatureId);
+        togglePocket();
+      });
     }
 
     // Fixed-Reward Task actions

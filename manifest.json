@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Poyori: 8-Bit Virtual Web Companion",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Raise Poyori, your 8-bit retro virtual pet roaming web pages in Mochimori. Complete tasks, study, and maintain streaks to evolve your companion!",
   "icons": {
     "16": "assets/icons/icon16.png",

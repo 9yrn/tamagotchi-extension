@@ -4,10 +4,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { ACCESSORIES, FOOD_ITEMS, CREATURE_THEMES, DOMAIN_PRESETS, DEFAULT_STATE } from '../shared/constants.js';
+import { ACCESSORIES, FOOD_ITEMS, CREATURE_THEMES, DOMAIN_PRESETS, DEFAULT_STATE, BREED_SOUNDS, getCreatureSound } from '../shared/constants.js';
 import { PoyoriEngine } from '../shared/game-engine.js';
 import { getAccessorySvg, getCreatureSprite } from '../content/sprites.js';
 import { TutorialModal } from '../ui/tutorial-modal.js';
+import { QuickBubble } from '../ui/quick-bubble.js';
+import { audioSynth } from '../ui/audio.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -338,5 +340,95 @@ test('V2 FEATURE: Vitals counters round off values and menu sections are correct
   assert.ok(!wardrobeMatch[1].includes('id="dash-pet-size-row"'), 'tab-wardrobe must not contain dash-pet-size-row');
   assert.ok(!wardrobeMatch[1].includes('id="dash-font-size-row"'), 'tab-wardrobe must not contain dash-font-size-row');
 });
+
+test('V2 FEATURE: Quirky Animal Sounds for All 6 Breeds, Eggs & Slacker', () => {
+  const breeds = ['cat', 'bird', 'fox', 'owl', 'dragon', 'shiba', 'egg', 'slacker'];
+
+  for (const b of breeds) {
+    assert.ok(Array.isArray(BREED_SOUNDS[b]), `BREED_SOUNDS must contain sound array for breed "${b}"`);
+    assert.ok(BREED_SOUNDS[b].length >= 3, `Breed "${b}" must have at least 3 quirky sound variations`);
+    
+    // Test getCreatureSound helper
+    const sound = getCreatureSound(b);
+    assert.ok(typeof sound === 'string' && sound.length > 0, `getCreatureSound("${b}") must return non-empty sound string`);
+    assert.ok(BREED_SOUNDS[b].includes(sound), `Sound "${sound}" must be one of breed "${b}" sounds`);
+  }
+
+  // Test creature ID mapping to sound
+  const creatureSample = [
+    { id: 'coding_tamago', breed: 'egg' },
+    { id: 'coding_cat_1', breed: 'cat' },
+    { id: 'creative_bird_2', breed: 'bird' },
+    { id: 'lit_fox_3', breed: 'fox' },
+    { id: 'research_owl_4', breed: 'owl' },
+    { id: 'game_dragon_5', breed: 'dragon' },
+    { id: 'personal_shiba_6', breed: 'shiba' },
+    { id: 'gutara_taida', breed: 'slacker' }
+  ];
+
+  for (const c of creatureSample) {
+    const sound = getCreatureSound(c.id);
+    assert.ok(BREED_SOUNDS[c.breed].includes(sound), `Creature "${c.id}" should map to "${c.breed}" sound, got "${sound}"`);
+  }
+
+  // Audio synthesizer playAnimalSound method exists and does not throw
+  assert.ok(typeof audioSynth.playAnimalSound === 'function', 'audioSynth must expose playAnimalSound');
+  assert.doesNotThrow(() => audioSynth.playAnimalSound('coding_cat_1'), 'playAnimalSound should not throw in non-browser env');
+});
+
+test('V2 FEATURE: Observational Third-Person Speech Bubbles (No First-Person Speech)', () => {
+  if (typeof global.document === 'undefined') {
+    global.document = {
+      createElement: () => ({
+        style: {},
+        classList: { add: () => {}, remove: () => {} },
+        appendChild: (c) => c
+      })
+    };
+  }
+
+  const state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+  state.pet.name = 'Mochi';
+  state.settings.languageMode = 'english';
+
+  const testCases = [
+    { setup: (s) => { s.pet.isSleeping = false; s.pet.isSick = false; s.pet.onaka = 80; s.pet.genki = 80; s.pet.kizuna = 80; }, mood: 'cheerful' },
+    { setup: (s) => { s.pet.isSleeping = true; }, mood: 'sleepy' },
+    { setup: (s) => { s.pet.isSleeping = false; s.pet.isSick = true; }, mood: 'sick' },
+    { setup: (s) => { s.pet.isSleeping = false; s.pet.isSick = false; s.pet.onaka = 10; s.pet.genki = 10; }, mood: 'grumpy' },
+    { setup: (s) => { s.pet.isSleeping = false; s.pet.isSick = false; s.pet.onaka = 20; s.pet.genki = 80; }, mood: 'hungry' }
+  ];
+
+  for (const tc of testCases) {
+    tc.setup(state);
+    const line = QuickBubble.getMoodMessage(state);
+    assert.ok(line.includes('Mochi'), `Dialogue for state "${tc.mood}" must include pet name "Mochi"`);
+
+    // Ensure zero first-person pet speech
+    const forbiddenFirstPerson = [/\bI am\b/i, /\bI'm\b/i, /\bmy\b/i, /\bme\b/i, /\bI want\b/i, /\bfeed me\b/i, /\bpet me\b/i];
+    for (const rx of forbiddenFirstPerson) {
+      assert.ok(!rx.test(line), `Mood "${tc.mood}" line "${line}" must not contain first person pronoun matching ${rx}`);
+    }
+  }
+
+  // Focus accountability nudge in PoyoriEngine must also be observational
+  const focusState = JSON.parse(JSON.stringify(DEFAULT_STATE));
+  focusState.pet.name = 'Pori';
+  const nudge = PoyoriEngine.getFocusNudge(focusState, 'coding');
+  assert.ok(nudge.includes('Pori glances up curiously'), 'Focus nudge must be in third-person observational narration');
+  assert.ok(!nudge.includes('I am') && !nudge.includes('my focus'), 'Focus nudge must not use first-person speech');
+});
+
+test('V2 FEATURE: Sound Bubbles Present in Handheld Modal and Dashboard Overview', () => {
+  const dashHtml = fs.readFileSync(path.join(rootDir, 'dashboard/dashboard.html'), 'utf8');
+  assert.ok(dashHtml.includes('id="dash-sound-bubble"'), 'dashboard.html must contain #dash-sound-bubble');
+  assert.ok(dashHtml.includes('class="dash-sound-bubble"'), 'dashboard.html must contain .dash-sound-bubble class');
+
+  const handheldJs = fs.readFileSync(path.join(rootDir, 'ui/handheld-modal.js'), 'utf8');
+  assert.ok(handheldJs.includes('id="device-sound-bubble"'), 'handheld-modal.js must render #device-sound-bubble');
+  assert.ok(handheldJs.includes('device-sound-bubble'), 'handheld-modal.js must include .device-sound-bubble class');
+  assert.ok(handheldJs.includes('getCreatureSound('), 'handheld-modal.js must call getCreatureSound');
+});
+
 
 

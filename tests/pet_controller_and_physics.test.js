@@ -200,3 +200,72 @@ test('PoyoriController Animations and Emotes', () => {
   assert.ok(controller.emoteEl.innerHTML.includes('<img'), 'Emote should contain an image tag');
   assert.ok(controller.emoteEl.classList.contains('visible'), 'Emote should be visible');
 });
+
+test('PoyoriController Corner-to-Corner Walking Patrol Across Aspect Ratios', () => {
+  const mockShadowRoot = new MockElement('div');
+  const controller = new PoyoriController(mockShadowRoot, { settings: { petSize: 'normal' } });
+  controller.petData = { creatureId: 'coding_cat_1', accessory: 'none', isSleeping: false };
+  controller.initDOM();
+
+  assert.ok(controller.soundBubbleEl, 'Sound bubble element should exist in DOM');
+
+  // Test across multiple aspect ratios: Mobile (375px), Desktop (1024px), Ultrawide (3440px)
+  const viewports = [
+    { name: 'Mobile 375px', width: 375 },
+    { name: 'Desktop 1024px', width: 1024 },
+    { name: 'Ultrawide 3440px', width: 3440 }
+  ];
+
+  for (const vp of viewports) {
+    global.window.innerWidth = vp.width;
+    const minX = 12;
+    const maxX = Math.max(minX, vp.width - controller.sizePx - 12);
+
+    // 1. Position pet at right corner, heading left (-1)
+    controller.x = maxX;
+    controller.direction = -1;
+    controller.state = 'walk';
+    controller.cornerRestSteps = 0;
+
+    // Simulate stepping: pet should walk until reaching left corner
+    let steps = 0;
+    while (controller.x > minX && steps < 5000) {
+      controller.x += controller.vx * controller.direction;
+      if (controller.x <= minX) {
+        controller.x = minX;
+        controller.reachCorner(1);
+        break;
+      }
+      steps++;
+    }
+
+    assert.equal(controller.x, minX, `${vp.name}: Pet must reach exact left corner`);
+    assert.equal(controller.state, 'idle', `${vp.name}: Pet enters corner rest upon reaching corner`);
+    assert.equal(controller.nextDirection, 1, `${vp.name}: Next direction set to walk toward right corner`);
+    assert.ok(controller.cornerRestSteps > 0, `${vp.name}: Rest timer initialized`);
+    assert.ok(controller.soundBubbleEl.classList.contains('visible'), `${vp.name}: Sound bubble is visible at corner`);
+
+    // 2. Simulate corner rest countdown in stepBehavior()
+    while (controller.cornerRestSteps > 0) {
+      controller.stepBehavior();
+    }
+    assert.equal(controller.state, 'walk', `${vp.name}: Pet resumes walking after resting at corner`);
+    assert.equal(controller.direction, 1, `${vp.name}: Direction flips toward right corner`);
+
+    // 3. Walk all the way to right corner
+    steps = 0;
+    while (controller.x < maxX && steps < 5000) {
+      controller.x += controller.vx * controller.direction;
+      if (controller.x >= maxX) {
+        controller.x = maxX;
+        controller.reachCorner(-1);
+        break;
+      }
+      steps++;
+    }
+
+    assert.equal(controller.x, maxX, `${vp.name}: Pet must reach exact right corner`);
+    assert.equal(controller.nextDirection, -1, `${vp.name}: Next direction set to walk toward left corner`);
+    assert.ok(controller.soundBubbleEl.classList.contains('visible'), `${vp.name}: Sound bubble triggers at right corner`);
+  }
+});

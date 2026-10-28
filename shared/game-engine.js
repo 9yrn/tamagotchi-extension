@@ -1031,7 +1031,7 @@ export class PoyoriEngine {
 
     if (isDistraction) {
       session.distractionsCount = (session.distractionsCount || 0) + 1;
-      const nudgeMessage = `Hey! This isn't ${disciplineName}! Mochimori needs your focus! Let's get back to work!`;
+      const nudgeMessage = this.getFocusNudge(state, session.discipline);
       return {
         isOnTopic: false,
         nudgeNeeded: true,
@@ -1053,6 +1053,16 @@ export class PoyoriEngine {
       bonusXp,
       remainingSeconds: session.remainingSeconds
     };
+  }
+
+  /**
+   * Generates a third-person observational focus accountability nudge
+   */
+  static getFocusNudge(state, discipline = 'coding') {
+    const petName = state?.pet?.name || 'Poyori';
+    const discMeta = DOMAIN_PRESETS[discipline] || { name: 'Focus' };
+    const disciplineName = discMeta.name || discipline;
+    return `${petName} glances up curiously. This website doesn't look like ${disciplineName} focus study!`;
   }
 
   /**
